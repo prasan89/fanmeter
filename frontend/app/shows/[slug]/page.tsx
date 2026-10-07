@@ -1,18 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, Users, Play, MessageCircle, BarChart2, Sword } from "lucide-react";
-import { getShow, getShowSeasons, getSeasonContestants } from "@/lib/api";
+import { ArrowLeft, Calendar, Users, Play, Clock, ChevronRight } from "lucide-react";
+import { getShow, getShowSeasons, getSeasonContestants, getSeasonEpisodes } from "@/lib/api";
 import { ContestantCard } from "@/components/ui/ContestantCard";
 import { Badge } from "@/components/ui/Badge";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate, categoryLabel } from "@/lib/utils";
+import type { Show, Season, Contestant, Episode } from "@/types";
 
 export const dynamic = "force-dynamic";
 
 interface ShowPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ season?: string }>;
 }
 
 export async function generateMetadata({ params }: ShowPageProps) {
@@ -21,44 +23,49 @@ export async function generateMetadata({ params }: ShowPageProps) {
     const show = await getShow(slug);
     return {
       title: `${show.name} — FanClash`,
-      description: show.description ?? `Follow ${show.name} on FanClash. Vote, discuss, and support your favorites.`,
+      description:
+        show.description ??
+        `Follow ${show.name} on FanClash. Explore seasons, episodes, and contestants.`,
+      openGraph: {
+        title: `${show.name} — FanClash`,
+        description:
+          show.description ??
+          `Follow ${show.name} on FanClash. Explore seasons, episodes, and contestants.`,
+        images: show.imageUrl ? [show.imageUrl] : [],
+      },
     };
   } catch {
     return { title: "Show — FanClash" };
   }
 }
 
-const navTabs = [
-  { id: "contestants", label: "Contestants", icon: Users },
-  { id: "episodes", label: "Episodes", icon: Play },
-  { id: "polls", label: "Polls", icon: BarChart2 },
-  { id: "wars", label: "Fan Wars", icon: Sword },
-  { id: "news", label: "News", icon: MessageCircle },
-];
-
-import type { Show, Season, Contestant } from "@/types";
-
-export default async function ShowPage({ params }: ShowPageProps) {
+export default async function ShowPage({ params, searchParams }: ShowPageProps) {
   const { slug } = await params;
+  const { season: seasonParam } = await searchParams;
 
-  let show: Show, seasons: Season[] = [], contestants: Contestant[] | undefined;
+  let show: Show, seasons: Season[] = [];
   try {
     show = await getShow(slug);
     seasons = await getShowSeasons(slug);
   } catch {
     notFound();
-    return; // unreachable but satisfies TypeScript
+    return;
   }
-  // show is guaranteed non-null here due to notFound() above
 
-  const activeSeason = seasons?.find((s) => s.status === "live") ?? seasons?.[0];
+  const activeSeason = seasonParam
+    ? (seasons.find((s) => s.id === Number(seasonParam)) ?? seasons.find((s) => s.status === "live") ?? seasons[0])
+    : (seasons.find((s) => s.status === "live") ?? seasons[0]);
+
+  let contestants: Contestant[] = [];
+  let episodes: Episode[] = [];
 
   if (activeSeason) {
-    try {
-      contestants = await getSeasonContestants(activeSeason.id);
-    } catch {
-      contestants = [];
-    }
+    const [c, e] = await Promise.allSettled([
+      getSeasonContestants(activeSeason.id),
+      getSeasonEpisodes(activeSeason.id),
+    ]);
+    contestants = c.status === "fulfilled" ? c.value : [];
+    episodes = e.status === "fulfilled" ? e.value : [];
   }
 
   const statusVariant =
@@ -82,7 +89,6 @@ export default async function ShowPage({ params }: ShowPageProps) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-        {/* Back button */}
         <div className="absolute top-4 left-4">
           <Link
             href="/shows"
@@ -93,11 +99,9 @@ export default async function ShowPage({ params }: ShowPageProps) {
           </Link>
         </div>
 
-        {/* Hero content */}
         <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-end gap-4 sm:gap-6">
-              {/* Show thumbnail */}
               <div className="flex-shrink-0 w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-xl ring-4 ring-white/30">
                 {show.imageUrl ? (
                   <Image
@@ -119,88 +123,200 @@ export default async function ShowPage({ params }: ShowPageProps) {
                   <Badge variant={statusVariant}>
                     {show.status === "live" ? "Live Now" : show.status === "upcoming" ? "Upcoming" : "Ended"}
                   </Badge>
-                  <span className="text-white/70 text-sm capitalize">
-                    {categoryLabel(show.category)}
-                  </span>
-                  {activeSeason && (
-                    <span className="text-white/70 text-sm">• {activeSeason.name}</span>
+                  <span className="text-white/70 text-sm capitalize">{categoryLabel(show.category)}</span>
+                  {show.language && (
+                    <span className="text-white/60 text-sm">• {show.language}</span>
                   )}
                 </div>
-                <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight">
-                  {show.name}
-                </h1>
+                <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight">{show.name}</h1>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Show meta */}
-        <div className="py-6 flex flex-wrap items-center gap-4 border-b border-gray-200">
-          {show.description && (
-            <p className="text-text-secondary flex-1 min-w-[200px]">{show.description}</p>
-          )}
-          <div className="flex items-center gap-4 flex-shrink-0">
-            <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-brand text-white font-semibold rounded-xl shadow-brand-sm hover:shadow-brand-lg hover:scale-105 transition-all text-sm">
-              Vote Now
-            </button>
-            {seasons && seasons.length > 1 && (
-              <select className="text-sm font-medium text-text-secondary bg-white border border-gray-200 rounded-xl px-3 py-2.5">
-                {seasons.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+        {/* Show meta + season switcher */}
+        <div className="py-6 flex flex-wrap items-start gap-4 border-b border-gray-200">
+          <div className="flex-1 min-w-[200px]">
+            {show.description && (
+              <p className="text-text-secondary">{show.description}</p>
             )}
+            {activeSeason?.description && (
+              <p className="mt-2 text-sm text-text-muted">{activeSeason.description}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {seasons.length > 1 && (
+              <div className="flex items-center gap-1 bg-surface-secondary rounded-xl p-1">
+                {seasons.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/shows/${slug}?season=${s.id}`}
+                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                      s.id === activeSeason?.id
+                        ? "bg-white text-brand-purple shadow-sm"
+                        : "text-text-secondary hover:text-brand-purple"
+                    }`}
+                  >
+                    {s.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+            <Link
+              href="/vote"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-brand text-white font-semibold rounded-xl shadow-brand-sm hover:shadow-brand-lg hover:scale-105 transition-all text-sm"
+            >
+              Vote Now
+            </Link>
           </div>
         </div>
 
-        {/* Season info */}
+        {/* Season meta */}
         {activeSeason && (
-          <div className="py-4 flex items-center gap-6 flex-wrap text-sm text-text-muted">
+          <div className="py-4 flex items-center gap-6 flex-wrap text-sm text-text-muted border-b border-gray-100">
             {activeSeason.startDate && (
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
                 Started: {formatDate(activeSeason.startDate)}
               </div>
             )}
-            {contestants && (
+            {activeSeason.endDate && (
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                Ends: {formatDate(activeSeason.endDate)}
+              </div>
+            )}
+            {contestants.length > 0 && (
               <div className="flex items-center gap-1.5">
                 <Users className="w-4 h-4" />
                 {contestants.length} Contestants
               </div>
             )}
+            {episodes.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Play className="w-4 h-4" />
+                {episodes.length} Episodes
+              </div>
+            )}
           </div>
         )}
 
-        {/* Navigation tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto py-2 mb-8 scrollbar-hide border-b border-gray-200">
-          {navTabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-lg transition-all ${
-                id === "contestants"
-                  ? "text-brand-purple bg-brand-purple/10 border-b-2 border-brand-purple -mb-px"
-                  : "text-text-secondary hover:text-brand-purple hover:bg-surface-tertiary"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Episodes Section */}
+        {activeSeason && (
+          <div className="py-10">
+            <SectionHeader
+              title="Episodes"
+              subtitle={episodes.length > 0 ? `${episodes.length} episodes this season` : undefined}
+              action={
+                episodes.length > 6 ? (
+                  <span className="text-sm font-semibold text-brand-purple">
+                    Showing latest 6
+                  </span>
+                ) : undefined
+              }
+            />
+
+            {episodes.length === 0 ? (
+              <EmptyState
+                title="No episodes yet"
+                description="Episodes will appear here as they air."
+                icon="🎬"
+              />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {episodes.slice(0, 6).map((episode) => (
+                  <Link
+                    key={episode.id}
+                    href={`/shows/${slug}/episodes/${episode.id}`}
+                    className="group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200"
+                  >
+                    <div className="relative h-40 bg-gradient-card overflow-hidden">
+                      {episode.thumbnail ? (
+                        <Image
+                          src={episode.thumbnail}
+                          alt={episode.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, 33vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-warm flex items-center justify-center">
+                          <Play className="w-10 h-10 text-white/60" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <div className="absolute top-3 left-3">
+                        <Badge
+                          variant={
+                            episode.status === "live"
+                              ? "live"
+                              : episode.status === "upcoming"
+                              ? "upcoming"
+                              : "completed"
+                          }
+                        >
+                          {episode.status === "live" ? "Live" : episode.status === "upcoming" ? "Upcoming" : "Aired"}
+                        </Badge>
+                      </div>
+                      <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-medium px-2 py-1 rounded-lg">
+                        Ep {episode.episodeNumber}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h4 className="font-bold text-text-primary group-hover:text-brand-purple transition-colors line-clamp-1">
+                        {episode.title}
+                      </h4>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-text-muted">
+                        {episode.airDate && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {formatDate(episode.airDate)}
+                          </span>
+                        )}
+                        {episode.durationMinutes && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {episode.durationMinutes}m
+                          </span>
+                        )}
+                      </div>
+                      {episode.description && (
+                        <p className="mt-2 text-xs text-text-muted line-clamp-2">{episode.description}</p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {episodes.length > 6 && (
+              <div className="mt-6 text-center">
+                <Link
+                  href={`/shows/${slug}/episodes`}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-brand-purple/30 text-brand-purple font-semibold rounded-xl hover:bg-brand-purple hover:text-white transition-all text-sm"
+                >
+                  View All {episodes.length} Episodes
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Contestants Grid */}
         <div className="pb-16">
           <SectionHeader
             title={`${activeSeason?.name ?? "Season"} Contestants`}
-            subtitle={contestants ? `${contestants.filter((c) => c.status === "active").length} still in the house` : undefined}
+            subtitle={
+              contestants.length > 0
+                ? `${contestants.filter((c) => c.status === "active").length} still active`
+                : undefined
+            }
           />
 
-          {!contestants || contestants.length === 0 ? (
+          {contestants.length === 0 ? (
             <EmptyState
               title="No contestants yet"
               description="Contestants will be announced soon. Stay tuned!"
@@ -213,26 +329,33 @@ export default async function ShowPage({ params }: ShowPageProps) {
                   key={contestant.id}
                   contestant={contestant}
                   rank={index + 1}
+                  showSlug={slug}
                 />
               ))}
             </div>
           )}
         </div>
 
-        {/* Coming Soon Sections */}
-        <div className="pb-16 space-y-6">
-          {[
-            { title: "Live Voting", icon: "🗳️", description: "Vote for your favorites — coming in M2" },
-            { title: "Fan Wars", icon: "⚔️", description: "Battle other fanbases — coming in M2" },
-            { title: "Discussions", icon: "💬", description: "Join the conversation — coming in M2" },
-            { title: "Latest News", icon: "📰", description: "Breaking updates — coming in M2" },
-          ].map((section) => (
-            <div key={section.title} className="bg-white rounded-2xl p-8 text-center border border-dashed border-purple-200">
-              <div className="text-4xl mb-3">{section.icon}</div>
-              <h3 className="font-bold text-text-primary mb-1">{section.title}</h3>
-              <p className="text-sm text-text-muted">{section.description}</p>
+        {/* Coming Soon: Fan Wars */}
+        <div className="pb-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Link href="/vote" className="group">
+            <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-purple-200 hover:border-brand-purple hover:shadow-card transition-all">
+              <div className="text-4xl mb-3">🗳️</div>
+              <h3 className="font-bold text-text-primary mb-1 group-hover:text-brand-purple transition-colors">
+                Live Voting
+              </h3>
+              <p className="text-sm text-text-muted">Vote for your favorites — coming soon</p>
             </div>
-          ))}
+          </Link>
+          <Link href="/wars" className="group">
+            <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-pink-200 hover:border-brand-pink hover:shadow-card transition-all">
+              <div className="text-4xl mb-3">⚔️</div>
+              <h3 className="font-bold text-text-primary mb-1 group-hover:text-brand-pink transition-colors">
+                Fan Wars
+              </h3>
+              <p className="text-sm text-text-muted">Battle other fanbases — coming soon</p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

@@ -48,4 +48,20 @@ class ShowControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data").isArray());
     }
+
+    @Test
+    void getShowsFilteredByCategoryReturnsFiltered() throws Exception {
+        mockMvc.perform(get("/api/shows").param("category", "reality-tv"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    void getShowsFilteredByLanguageReturnsFiltered() throws Exception {
+        mockMvc.perform(get("/api/shows").param("language", "Tamil"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").isArray());
+    }
 }

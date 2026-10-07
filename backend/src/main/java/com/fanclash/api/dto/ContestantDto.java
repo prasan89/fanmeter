@@ -8,6 +8,7 @@ public record ContestantDto(
         String name,
         String slug,
         String profileImage,
+        String coverImage,
         String bio,
         String status,
         LocalDateTime createdAt,

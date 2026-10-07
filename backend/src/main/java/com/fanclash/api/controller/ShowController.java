@@ -16,7 +16,13 @@ public class ShowController {
     private final ShowService showService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ShowDto>>> getAllShows() {
+    public ResponseEntity<ApiResponse<List<ShowDto>>> getAllShows(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String language,
+            @RequestParam(required = false) String status) {
+        if (category != null || language != null || status != null) {
+            return ResponseEntity.ok(ApiResponse.ok(showService.getShowsByFilters(category, language, status)));
+        }
         return ResponseEntity.ok(ApiResponse.ok(showService.getAllShows()));
     }
 

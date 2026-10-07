@@ -38,6 +38,9 @@ public class Show {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(nullable = false)
+    private String language;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

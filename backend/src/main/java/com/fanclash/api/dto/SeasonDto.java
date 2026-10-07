@@ -11,6 +11,8 @@ public record SeasonDto(
         String name,
         Integer seasonNumber,
         String status,
+        String description,
+        String heroImage,
         LocalDate startDate,
         LocalDate endDate,
         LocalDateTime createdAt,

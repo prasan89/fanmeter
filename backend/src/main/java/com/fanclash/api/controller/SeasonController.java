@@ -24,4 +24,9 @@ public class SeasonController {
     public ResponseEntity<ApiResponse<List<ContestantDto>>> getContestants(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(showService.getContestantsBySeasonId(id)));
     }
+
+    @GetMapping("/{id}/episodes")
+    public ResponseEntity<ApiResponse<List<EpisodeDto>>> getEpisodes(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(showService.getEpisodesBySeasonId(id)));
+    }
 }

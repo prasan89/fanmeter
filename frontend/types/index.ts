@@ -3,6 +3,7 @@ export interface Show {
   name: string;
   slug: string;
   category: string;
+  language: string | null;
   description: string | null;
   status: "live" | "upcoming" | "completed";
   imageUrl: string | null;
@@ -18,6 +19,8 @@ export interface Season {
   name: string;
   seasonNumber: number;
   status: "live" | "upcoming" | "completed";
+  description: string | null;
+  heroImage: string | null;
   startDate: string | null;
   endDate: string | null;
   createdAt: string;
@@ -29,6 +32,9 @@ export interface Episode {
   seasonId: number;
   episodeNumber: number;
   title: string;
+  description: string | null;
+  thumbnail: string | null;
+  durationMinutes: number | null;
   airDate: string | null;
   status: "upcoming" | "live" | "aired";
   createdAt: string;
@@ -41,6 +47,7 @@ export interface Contestant {
   name: string;
   slug: string;
   profileImage: string | null;
+  coverImage: string | null;
   bio: string | null;
   status: "active" | "eliminated" | "winner";
   createdAt: string;
@@ -51,4 +58,10 @@ export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+}
+
+export interface SearchResult {
+  shows: Show[];
+  contestants: Contestant[];
+  total: number;
 }

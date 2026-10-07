@@ -6,17 +6,16 @@ import type { Show } from "@/types";
 interface ShowCardProps {
   show: Show;
   size?: "sm" | "md" | "lg";
+  featured?: boolean;
 }
 
-export function ShowCard({ show, size = "md" }: ShowCardProps) {
+export function ShowCard({ show, size = "md", featured = false }: ShowCardProps) {
   const statusVariant =
-    show.status === "live"
-      ? "live"
-      : show.status === "upcoming"
-      ? "upcoming"
-      : "completed";
+    show.status === "live" ? "live" : show.status === "upcoming" ? "upcoming" : "completed";
+  const statusLabel =
+    show.status === "live" ? "Live Now" : show.status === "upcoming" ? "Upcoming" : "Ended";
 
-  const cardHeight = size === "lg" ? "h-64" : size === "sm" ? "h-36" : "h-48";
+  const cardHeight = featured ? "h-72" : size === "lg" ? "h-64" : size === "sm" ? "h-36" : "h-48";
 
   return (
     <Link href={`/shows/${show.slug}`} className="group block">
@@ -33,22 +32,31 @@ export function ShowCard({ show, size = "md" }: ShowCardProps) {
             />
           ) : (
             <div className="w-full h-full bg-gradient-hero flex items-center justify-center">
-              <span className="text-4xl font-bold text-white/30">
-                {show.name.charAt(0)}
-              </span>
+              <span className="text-4xl font-bold text-white/30">{show.name.charAt(0)}</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+          {/* Status badge */}
           <div className="absolute top-3 left-3">
-            <Badge variant={statusVariant}>
-              {show.status === "live" ? "Live Now" : show.status === "upcoming" ? "Upcoming" : "Ended"}
-            </Badge>
+            <Badge variant={statusVariant}>{statusLabel}</Badge>
           </div>
-          <div className="absolute bottom-3 left-3 right-3">
+
+          {/* Category pill */}
+          <div className="absolute bottom-3 left-3">
             <span className="inline-flex items-center px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-xs text-white font-medium capitalize">
               {show.category.replace(/-/g, " ")}
             </span>
           </div>
+
+          {/* Language */}
+          {show.language && (
+            <div className="absolute bottom-3 right-3">
+              <span className="inline-flex items-center px-2 py-1 bg-black/30 backdrop-blur-sm rounded-lg text-xs text-white/80 font-medium">
+                {show.language}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -57,10 +65,19 @@ export function ShowCard({ show, size = "md" }: ShowCardProps) {
             {show.name}
           </h3>
           {show.description && size !== "sm" && (
-            <p className="mt-1 text-sm text-text-muted line-clamp-2">
-              {show.description}
-            </p>
+            <p className="mt-1 text-sm text-text-muted line-clamp-2">{show.description}</p>
           )}
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-xs text-brand-purple font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+              View Show →
+            </span>
+            {show.status === "live" && (
+              <span className="text-xs text-red-500 font-bold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse-live" />
+                Live
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

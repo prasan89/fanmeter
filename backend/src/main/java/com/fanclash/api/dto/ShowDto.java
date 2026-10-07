@@ -10,6 +10,7 @@ public record ShowDto(
         String description,
         String status,
         String imageUrl,
+        String language,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

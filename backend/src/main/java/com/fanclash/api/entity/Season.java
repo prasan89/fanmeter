@@ -40,6 +40,12 @@ public class Season {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "hero_image")
+    private String heroImage;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

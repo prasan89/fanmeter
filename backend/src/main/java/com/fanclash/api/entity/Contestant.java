@@ -35,6 +35,9 @@ public class Contestant {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
+    @Column(name = "cover_image")
+    private String coverImage;
+
     @Column(nullable = false)
     private String status;
 

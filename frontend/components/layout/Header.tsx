@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, Zap } from "lucide-react";
+import { SearchBox } from "@/components/ui/SearchBox";
 
 const navLinks = [
-  { href: "/", label: "Home" },
   { href: "/shows", label: "Shows" },
-  { href: "/shows?filter=live", label: "Live", badge: "LIVE" },
-  { href: "/shows?filter=trending", label: "Trending" },
+  { href: "/shows?status=live", label: "Live", badge: "LIVE" },
+  { href: "/vote", label: "Vote" },
+  { href: "/wars", label: "Wars" },
 ];
 
 export function Header() {
@@ -19,7 +20,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
             <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center shadow-brand-sm group-hover:shadow-brand-lg transition-shadow">
               <Zap className="w-4 h-4 text-white" fill="currentColor" />
             </div>
@@ -29,7 +30,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1 ml-6">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -46,24 +47,24 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <button className="text-sm font-medium text-text-secondary hover:text-brand-purple px-4 py-2 rounded-lg hover:bg-surface-tertiary transition-all">
-              Sign In
-            </button>
-            <button className="text-sm font-semibold text-white bg-gradient-brand px-5 py-2 rounded-xl shadow-brand-sm hover:shadow-brand-lg hover:scale-105 transition-all">
-              Join FanClash
+          {/* Right: Search + CTA */}
+          <div className="flex items-center gap-2 ml-auto">
+            <SearchBox />
+            <div className="hidden md:flex items-center gap-2">
+              <button className="text-sm font-semibold text-white bg-gradient-brand px-4 py-2 rounded-xl shadow-brand-sm hover:shadow-brand-lg hover:scale-105 transition-all">
+                Join Free
+              </button>
+            </div>
+
+            {/* Mobile menu button */}
+            <button
+              className="md:hidden p-2 rounded-lg text-text-secondary hover:text-brand-purple hover:bg-surface-tertiary transition-all"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
-
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden p-2 rounded-lg text-text-secondary hover:text-brand-purple hover:bg-surface-tertiary transition-all"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
 
         {/* Mobile dropdown menu */}
@@ -84,12 +85,9 @@ export function Header() {
                 )}
               </Link>
             ))}
-            <div className="pt-3 border-t border-purple-100 flex flex-col gap-2">
-              <button className="w-full text-sm font-medium text-text-secondary py-2.5 px-4 border border-purple-200 rounded-xl hover:bg-surface-tertiary transition-all">
-                Sign In
-              </button>
+            <div className="pt-3 border-t border-purple-100">
               <button className="w-full text-sm font-semibold text-white bg-gradient-brand py-2.5 px-4 rounded-xl shadow-brand-sm">
-                Join FanClash
+                Join FanClash Free
               </button>
             </div>
           </div>

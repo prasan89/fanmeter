@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "./Badge";
 import type { Contestant } from "@/types";
@@ -5,18 +6,22 @@ import type { Contestant } from "@/types";
 interface ContestantCardProps {
   contestant: Contestant;
   rank?: number;
+  showSlug?: string;
 }
 
-export function ContestantCard({ contestant, rank }: ContestantCardProps) {
+export function ContestantCard({ contestant, rank, showSlug }: ContestantCardProps) {
   const statusVariant =
-    contestant.status === "active"
+    contestant.status === "winner"
       ? "active"
       : contestant.status === "eliminated"
       ? "eliminated"
       : "active";
 
-  return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 group">
+  const statusLabel =
+    contestant.status === "winner" ? "Winner" : contestant.status === "eliminated" ? "Out" : "Active";
+
+  const card = (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 group cursor-pointer">
       {/* Avatar */}
       <div className="relative h-48 overflow-hidden bg-gradient-card">
         {contestant.profileImage ? (
@@ -41,9 +46,7 @@ export function ContestantCard({ contestant, rank }: ContestantCardProps) {
           </div>
         )}
         <div className="absolute top-3 right-3">
-          <Badge variant={statusVariant}>
-            {contestant.status === "eliminated" ? "Out" : "Active"}
-          </Badge>
+          <Badge variant={statusVariant}>{statusLabel}</Badge>
         </div>
       </div>
 
@@ -53,10 +56,20 @@ export function ContestantCard({ contestant, rank }: ContestantCardProps) {
         {contestant.bio && (
           <p className="mt-1 text-xs text-text-muted line-clamp-2">{contestant.bio}</p>
         )}
-        <button className="mt-3 w-full text-xs font-semibold text-brand-purple border border-brand-purple/30 rounded-lg py-2 hover:bg-brand-purple hover:text-white transition-all">
-          Vote Now
-        </button>
+        <div className="mt-3 w-full text-xs font-semibold text-brand-purple border border-brand-purple/30 rounded-lg py-2 text-center group-hover:bg-brand-purple group-hover:text-white transition-all">
+          View Profile
+        </div>
       </div>
     </div>
   );
+
+  if (showSlug) {
+    return (
+      <Link href={`/shows/${showSlug}/contestants/${contestant.slug}`}>
+        {card}
+      </Link>
+    );
+  }
+
+  return card;
 }
