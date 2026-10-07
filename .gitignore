@@ -1,0 +1,31 @@
+# Java / Maven
+backend/target/
+backend/*.jar
+*.class
+*.log
+
+# Node.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env.production
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# GCP / Docker
+.gcloud/
+*.tfstate
+
+# Environment
+.env
+.env.*
+!.env.example
