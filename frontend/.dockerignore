@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+*.log
+.env*
+!.env.example
+dist
+build
+coverage
+.nyc_output
+.cache
+.DS_Store
+README.md
+AGENTS.md
