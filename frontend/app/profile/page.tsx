@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 export default function ProfilePage() {
   return (
-    <div className="min-h-screen bg-surface-secondary flex items-center justify-center px-4">
+    <div className="min-h-screen bg-violet-50 flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
-        <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center text-5xl mx-auto mb-8 shadow-brand-lg">
+        <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center text-5xl mx-auto mb-8 shadow-lg">
           👤
         </div>
 
@@ -19,26 +19,26 @@ export default function ProfilePage() {
           <span className="text-sm font-semibold text-blue-600">Coming Soon</span>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-black text-text-primary mb-4">
+        <h1 className="text-4xl sm:text-5xl font-black text-gray-900 mb-4">
           Fan Profile
         </h1>
-        <p className="text-text-secondary text-lg mb-3">
+        <p className="text-gray-600 text-lg mb-3">
           Your fan identity is being built.
         </p>
-        <p className="text-text-muted mb-10 max-w-md mx-auto">
+        <p className="text-gray-400 mb-10 max-w-md mx-auto">
           Track your votes, earn badges, see your fan rank, and show off your fandom loyalty.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/shows"
-            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-brand text-white font-bold rounded-2xl shadow-brand-sm hover:shadow-brand-lg hover:scale-105 transition-all"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold rounded-2xl shadow hover:shadow-lg hover:scale-105 transition-all"
           >
             Browse Shows
           </Link>
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-text-secondary font-semibold rounded-2xl border border-gray-200 hover:border-brand-purple/30 hover:text-brand-purple transition-all"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-gray-600 font-semibold rounded-2xl border border-gray-200 hover:border-violet-300/30 hover:text-violet-600 transition-all"
           >
             ← Back Home
           </Link>

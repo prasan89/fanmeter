@@ -6,71 +6,60 @@ import { Zap, X, Globe, Share2 } from "lucide-react";
 const footerLinks = {
   Platform: [
     { label: "All Shows", href: "/shows" },
-    { label: "Live Now", href: "/shows?filter=live" },
-    { label: "Trending", href: "/shows?filter=trending" },
+    { label: "Live Now", href: "/shows?status=live" },
+    { label: "Trending", href: "/shows" },
     { label: "Categories", href: "/shows" },
   ],
   Community: [
     { label: "Fan Wars", href: "/wars" },
-    { label: "Leaderboard", href: "/leaderboard" },
-    { label: "Discussions", href: "/discuss" },
-    { label: "Daily Polls", href: "/polls" },
+    { label: "Leaderboard", href: "/vote" },
+    { label: "Discussions", href: "/wars" },
+    { label: "Daily Polls", href: "/vote" },
   ],
   Company: [
-    { label: "About", href: "/about" },
-    { label: "Careers", href: "/careers" },
-    { label: "Press", href: "/press" },
-    { label: "Contact", href: "/contact" },
+    { label: "About", href: "/" },
+    { label: "Careers", href: "/" },
+    { label: "Press", href: "/" },
+    { label: "Contact", href: "/" },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-    { label: "Cookie Policy", href: "/cookies" },
+    { label: "Privacy Policy", href: "/" },
+    { label: "Terms of Service", href: "/" },
+    { label: "Cookie Policy", href: "/" },
   ],
 };
 
 export function Footer() {
   return (
     <footer className="bg-white border-t border-purple-100 mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-8">
-          {/* Brand */}
           <div className="col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-pink-500 flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" fill="currentColor" />
               </div>
-              <span className="text-xl font-bold text-brand-purple-dark">
-                Fan<span className="text-brand-pink">Clash</span>
-              </span>
+              <span className="text-xl font-bold text-violet-900">Fan<span className="text-pink-500">Clash</span></span>
             </Link>
-            <p className="text-sm text-text-muted mb-4 leading-relaxed">
+            <p className="text-sm text-gray-500 mb-4 leading-relaxed">
               The ultimate fan engagement platform. Vote, support your favorites, and battle for the top.
             </p>
             <div className="flex items-center gap-3">
               {[X, Globe, Share2].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="w-9 h-9 rounded-xl bg-surface-tertiary flex items-center justify-center text-text-muted hover:text-brand-purple hover:bg-brand-purple/10 transition-all"
-                >
+                <a key={i} href="#" className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-gray-400 hover:text-violet-600 hover:bg-violet-100 transition-all">
                   <Icon className="w-4 h-4" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h4 className="text-sm font-semibold text-text-primary mb-3">{category}</h4>
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">{category}</h4>
               <ul className="space-y-2">
                 {links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-text-muted hover:text-brand-purple transition-colors"
-                    >
+                  <li key={link.label}>
+                    <Link href={link.href} className="text-sm text-gray-500 hover:text-violet-600 transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -81,12 +70,8 @@ export function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-purple-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-text-muted">
-            © 2026 FanClash. All rights reserved.
-          </p>
-          <p className="text-sm text-text-muted font-medium">
-            Fandoms Battle Here ⚡
-          </p>
+          <p className="text-sm text-gray-400">© 2026 FanClash. All rights reserved.</p>
+          <p className="text-sm text-gray-400 font-medium">Fandoms Battle Here ⚡</p>
         </div>
       </div>
     </footer>

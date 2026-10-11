@@ -72,7 +72,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
     show.status === "live" ? "live" : show.status === "upcoming" ? "upcoming" : "completed";
 
   return (
-    <div className="min-h-screen bg-surface-secondary">
+    <div className="min-h-screen bg-violet-50">
       {/* Hero */}
       <div className="relative h-[360px] sm:h-[480px] overflow-hidden">
         {show.imageUrl ? (
@@ -85,7 +85,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
             sizes="100vw"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-hero" />
+          <div className="w-full h-full bg-gradient-to-br from-violet-700 via-purple-600 to-pink-500" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
@@ -112,7 +112,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-brand flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-r from-violet-600 to-pink-500 flex items-center justify-center">
                     <span className="text-3xl font-bold text-white">{show.name.charAt(0)}</span>
                   </div>
                 )}
@@ -140,23 +140,23 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
         <div className="py-6 flex flex-wrap items-start gap-4 border-b border-gray-200">
           <div className="flex-1 min-w-[200px]">
             {show.description && (
-              <p className="text-text-secondary">{show.description}</p>
+              <p className="text-gray-600">{show.description}</p>
             )}
             {activeSeason?.description && (
-              <p className="mt-2 text-sm text-text-muted">{activeSeason.description}</p>
+              <p className="mt-2 text-sm text-gray-400">{activeSeason.description}</p>
             )}
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
             {seasons.length > 1 && (
-              <div className="flex items-center gap-1 bg-surface-secondary rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-violet-50 rounded-xl p-1">
                 {seasons.map((s) => (
                   <Link
                     key={s.id}
                     href={`/shows/${slug}?season=${s.id}`}
                     className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                       s.id === activeSeason?.id
-                        ? "bg-white text-brand-purple shadow-sm"
-                        : "text-text-secondary hover:text-brand-purple"
+                        ? "bg-white text-violet-600 shadow-sm"
+                        : "text-gray-600 hover:text-violet-600"
                     }`}
                   >
                     {s.name}
@@ -166,7 +166,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
             )}
             <Link
               href="/vote"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-brand text-white font-semibold rounded-xl shadow-brand-sm hover:shadow-brand-lg hover:scale-105 transition-all text-sm"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-semibold rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all text-sm"
             >
               Vote Now
             </Link>
@@ -175,7 +175,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
 
         {/* Season meta */}
         {activeSeason && (
-          <div className="py-4 flex items-center gap-6 flex-wrap text-sm text-text-muted border-b border-gray-100">
+          <div className="py-4 flex items-center gap-6 flex-wrap text-sm text-gray-400 border-b border-gray-100">
             {activeSeason.startDate && (
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
@@ -211,7 +211,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
               subtitle={episodes.length > 0 ? `${episodes.length} episodes this season` : undefined}
               action={
                 episodes.length > 6 ? (
-                  <span className="text-sm font-semibold text-brand-purple">
+                  <span className="text-sm font-semibold text-violet-600">
                     Showing latest 6
                   </span>
                 ) : undefined
@@ -230,9 +230,9 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
                   <Link
                     key={episode.id}
                     href={`/shows/${slug}/episodes/${episode.id}`}
-                    className="group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200"
+                    className="group bg-white rounded-2xl overflow-hidden shadow hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
                   >
-                    <div className="relative h-40 bg-gradient-card overflow-hidden">
+                    <div className="relative h-40 bg-gray-50 overflow-hidden">
                       {episode.thumbnail ? (
                         <Image
                           src={episode.thumbnail}
@@ -242,7 +242,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
                           sizes="(max-width: 640px) 100vw, 33vw"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-warm flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-r from-pink-500 to-orange-400 flex items-center justify-center">
                           <Play className="w-10 h-10 text-white/60" />
                         </div>
                       )}
@@ -265,10 +265,10 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
                       </div>
                     </div>
                     <div className="p-4">
-                      <h4 className="font-bold text-text-primary group-hover:text-brand-purple transition-colors line-clamp-1">
+                      <h4 className="font-bold text-gray-900 group-hover:text-violet-600 transition-colors line-clamp-1">
                         {episode.title}
                       </h4>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-text-muted">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
                         {episode.airDate && (
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
@@ -283,7 +283,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
                         )}
                       </div>
                       {episode.description && (
-                        <p className="mt-2 text-xs text-text-muted line-clamp-2">{episode.description}</p>
+                        <p className="mt-2 text-xs text-gray-400 line-clamp-2">{episode.description}</p>
                       )}
                     </div>
                   </Link>
@@ -295,7 +295,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
               <div className="mt-6 text-center">
                 <Link
                   href={`/shows/${slug}/episodes`}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-brand-purple/30 text-brand-purple font-semibold rounded-xl hover:bg-brand-purple hover:text-white transition-all text-sm"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-violet-300/30 text-violet-600 font-semibold rounded-xl hover:bg-violet-600 hover:text-white transition-all text-sm"
                 >
                   View All {episodes.length} Episodes
                   <ChevronRight className="w-4 h-4" />
@@ -339,21 +339,21 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
         {/* Coming Soon: Fan Wars */}
         <div className="pb-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Link href="/vote" className="group">
-            <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-purple-200 hover:border-brand-purple hover:shadow-card transition-all">
+            <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-purple-200 hover:border-violet-300 hover:shadow transition-all">
               <div className="text-4xl mb-3">🗳️</div>
-              <h3 className="font-bold text-text-primary mb-1 group-hover:text-brand-purple transition-colors">
+              <h3 className="font-bold text-gray-900 mb-1 group-hover:text-violet-600 transition-colors">
                 Live Voting
               </h3>
-              <p className="text-sm text-text-muted">Vote for your favorites — coming soon</p>
+              <p className="text-sm text-gray-400">Vote for your favorites — coming soon</p>
             </div>
           </Link>
           <Link href="/wars" className="group">
-            <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-pink-200 hover:border-brand-pink hover:shadow-card transition-all">
+            <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-pink-200 hover:border-brand-pink hover:shadow transition-all">
               <div className="text-4xl mb-3">⚔️</div>
-              <h3 className="font-bold text-text-primary mb-1 group-hover:text-brand-pink transition-colors">
+              <h3 className="font-bold text-gray-900 mb-1 group-hover:text-pink-500 transition-colors">
                 Fan Wars
               </h3>
-              <p className="text-sm text-text-muted">Battle other fanbases — coming soon</p>
+              <p className="text-sm text-gray-400">Battle other fanbases — coming soon</p>
             </div>
           </Link>
         </div>

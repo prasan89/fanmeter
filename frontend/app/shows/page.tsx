@@ -89,7 +89,7 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-surface-secondary">
+    <div className="min-h-screen bg-violet-50">
       {/* Page Hero */}
       <div className="bg-gradient-to-br from-brand-purple-dark via-brand-purple to-brand-pink py-14 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
@@ -117,8 +117,8 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
               href={filterHref({ category: cat.slug })}
               className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                 activeCategory === cat.slug
-                  ? "bg-gradient-brand text-white shadow-brand-sm"
-                  : "bg-white text-text-secondary border border-gray-200 hover:border-brand-purple/30 hover:text-brand-purple"
+                  ? "bg-gradient-to-r from-violet-600 to-pink-500 text-white shadow"
+                  : "bg-white text-gray-600 border border-gray-200 hover:border-violet-300/30 hover:text-violet-600"
               }`}
             >
               <span>{cat.icon}</span> {cat.label}
@@ -136,8 +136,8 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
                 href={filterHref({ status: sf.value })}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   activeStatus === sf.value
-                    ? "bg-brand-purple text-white"
-                    : "bg-white text-text-secondary border border-gray-200 hover:text-brand-purple hover:border-brand-purple/30"
+                    ? "bg-violet-600 text-white"
+                    : "bg-white text-gray-600 border border-gray-200 hover:text-violet-600 hover:border-violet-300/30"
                 }`}
               >
                 {sf.label}
@@ -157,8 +157,8 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
                 href={filterHref({ language: "all" })}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   activeLanguage === "all"
-                    ? "bg-brand-orange text-white"
-                    : "bg-white text-text-secondary border border-gray-200 hover:text-brand-orange hover:border-brand-orange/30"
+                    ? "bg-orange-400 text-white"
+                    : "bg-white text-gray-600 border border-gray-200 hover:text-orange-500 hover:border-brand-orange/30"
                 }`}
               >
                 All Languages
@@ -169,8 +169,8 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
                   href={filterHref({ language: lang })}
                   className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     activeLanguage.toLowerCase() === lang.toLowerCase()
-                      ? "bg-brand-orange text-white"
-                      : "bg-white text-text-secondary border border-gray-200 hover:text-brand-orange hover:border-brand-orange/30"
+                      ? "bg-orange-400 text-white"
+                      : "bg-white text-gray-600 border border-gray-200 hover:text-orange-500 hover:border-brand-orange/30"
                   }`}
                 >
                   {lang}
@@ -183,7 +183,7 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
           {isFiltered && (
             <Link
               href="/shows"
-              className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium text-text-muted hover:text-red-500 transition-colors ml-auto"
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-500 transition-colors ml-auto"
             >
               ✕ Clear
             </Link>
@@ -203,7 +203,7 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
             action={
               <Link
                 href="/shows"
-                className="text-sm font-semibold text-white bg-gradient-brand px-5 py-2.5 rounded-xl shadow-brand-sm"
+                className="text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-pink-500 px-5 py-2.5 rounded-xl shadow"
               >
                 View All Shows
               </Link>
@@ -211,7 +211,7 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
           />
         ) : isFiltered ? (
           <>
-            <div className="mb-6 text-sm text-text-muted">
+            <div className="mb-6 text-sm text-gray-400">
               {filteredShows.length} show{filteredShows.length !== 1 ? "s" : ""} found
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -231,7 +231,7 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
                   action={
                     <Link
                       href={`/shows?category=${cat}`}
-                      className="text-sm font-semibold text-brand-purple hover:underline"
+                      className="text-sm font-semibold text-violet-600 hover:underline"
                     >
                       See all
                     </Link>

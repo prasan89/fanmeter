@@ -49,7 +49,7 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
     contestant.status === "winner" ? "Winner" : contestant.status === "eliminated" ? "Eliminated" : "Active";
 
   return (
-    <div className="min-h-screen bg-surface-secondary">
+    <div className="min-h-screen bg-violet-50">
       {/* Cover / Hero */}
       <div className="relative h-[300px] sm:h-[400px] overflow-hidden">
         {contestant.coverImage ? (
@@ -71,7 +71,7 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
             sizes="100vw"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-hero" />
+          <div className="w-full h-full bg-gradient-to-br from-violet-700 via-purple-600 to-pink-500" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
@@ -88,7 +88,7 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
 
       {/* Profile card overlap */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 -mt-20 relative z-10">
-        <div className="bg-white rounded-3xl shadow-card-hover p-6 sm:p-8">
+        <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-8">
           <div className="flex items-end gap-5 mb-6">
             {/* Avatar */}
             <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden ring-4 ring-white shadow-xl -mt-16">
@@ -101,7 +101,7 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-brand flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-r from-violet-600 to-pink-500 flex items-center justify-center">
                   <span className="text-4xl font-bold text-white">{contestant.name.charAt(0)}</span>
                 </div>
               )}
@@ -110,14 +110,14 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
             <div className="flex-1 min-w-0 pb-1">
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <Badge variant={statusVariant}>{statusLabel}</Badge>
-                <span className="text-sm text-text-muted">{season.name}</span>
+                <span className="text-sm text-gray-400">{season.name}</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-text-primary">{contestant.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{contestant.name}</h1>
             </div>
           </div>
 
           {/* Season details */}
-          <div className="flex flex-wrap gap-4 text-sm text-text-muted mb-6 pb-6 border-b border-gray-100">
+          <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-6 pb-6 border-b border-gray-100">
             {season.startDate && (
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
@@ -129,21 +129,21 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
           {/* Bio */}
           {contestant.bio ? (
             <div>
-              <h2 className="text-base font-bold text-text-primary mb-3">About</h2>
-              <p className="text-text-secondary leading-relaxed">{contestant.bio}</p>
+              <h2 className="text-base font-bold text-gray-900 mb-3">About</h2>
+              <p className="text-gray-600 leading-relaxed">{contestant.bio}</p>
             </div>
           ) : (
-            <p className="text-text-muted text-sm">Bio coming soon.</p>
+            <p className="text-gray-400 text-sm">Bio coming soon.</p>
           )}
 
           {/* Vote CTA */}
           <div className="mt-8 bg-gradient-to-br from-surface-secondary to-white rounded-2xl p-6 text-center border border-gray-100">
-            <p className="text-sm font-semibold text-text-primary mb-3">
+            <p className="text-sm font-semibold text-gray-900 mb-3">
               Support {contestant.name.split(" ")[0]}
             </p>
             <Link
               href="/vote"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-brand text-white font-bold rounded-xl shadow-brand-sm hover:shadow-brand-lg hover:scale-105 transition-all text-sm"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all text-sm"
             >
               Vote Now — Coming Soon
             </Link>
@@ -153,7 +153,7 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
           <div className="mt-6 text-center">
             <Link
               href={`/shows/${slug}`}
-              className="text-sm text-text-muted hover:text-brand-purple transition-colors"
+              className="text-sm text-gray-400 hover:text-violet-600 transition-colors"
             >
               ← Back to {show.name}
             </Link>

@@ -26,13 +26,13 @@ export function MobileNav() {
               href={href}
               className={`flex flex-col items-center gap-0.5 flex-1 py-2 px-1 rounded-xl transition-all ${
                 isActive
-                  ? "text-brand-purple"
-                  : "text-text-muted hover:text-brand-purple"
+                  ? "text-violet-600"
+                  : "text-gray-400 hover:text-violet-600"
               }`}
             >
               <div
                 className={`p-1.5 rounded-lg transition-all ${
-                  isActive ? "bg-brand-purple/10" : ""
+                  isActive ? "bg-violet-600/10" : ""
                 }`}
               >
                 <Icon
@@ -44,7 +44,7 @@ export function MobileNav() {
                 {label}
               </span>
               {isActive && (
-                <div className="absolute top-0 w-8 h-0.5 bg-gradient-brand rounded-b-full" />
+                <div className="absolute top-0 w-8 h-0.5 bg-gradient-to-r from-violet-600 to-pink-500 rounded-b-full" />
               )}
             </Link>
           );

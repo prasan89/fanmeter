@@ -18,7 +18,7 @@ export function Skeleton({ className }: SkeletonProps) {
 
 export function ShowCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-card">
+    <div className="bg-white rounded-2xl overflow-hidden shadow">
       <Skeleton className="h-48 rounded-none" />
       <div className="p-4 space-y-2">
         <Skeleton className="h-5 w-3/4" />
@@ -31,7 +31,7 @@ export function ShowCardSkeleton() {
 
 export function ContestantCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-card">
+    <div className="bg-white rounded-2xl overflow-hidden shadow">
       <Skeleton className="h-48 rounded-none" />
       <div className="p-4 space-y-2">
         <Skeleton className="h-5 w-1/2" />

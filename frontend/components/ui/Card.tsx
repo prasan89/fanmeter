@@ -14,9 +14,9 @@ export function Card({
   ...props
 }: CardProps) {
   const variantStyles = {
-    default: "bg-white shadow-card",
-    elevated: "bg-white shadow-card-hover",
-    gradient: "bg-gradient-card border border-brand-purple/10",
+    default: "bg-white shadow",
+    elevated: "bg-white shadow-lg",
+    gradient: "bg-gray-50 border border-violet-300/10",
     bordered: "bg-white border border-purple-100",
   };
 
@@ -26,7 +26,7 @@ export function Card({
         "rounded-2xl overflow-hidden",
         variantStyles[variant],
         hover &&
-          "cursor-pointer hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200",
+          "cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200",
         className
       )}
       {...props}

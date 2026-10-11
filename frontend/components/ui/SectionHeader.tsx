@@ -23,14 +23,14 @@ export function SectionHeader({
           className={cn(
             "text-2xl sm:text-3xl font-bold",
             gradient
-              ? "bg-gradient-brand bg-clip-text text-transparent"
-              : "text-text-primary"
+              ? "bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent"
+              : "text-gray-900"
           )}
         >
           {title}
         </h2>
         {subtitle && (
-          <p className="mt-1 text-sm text-text-muted">{subtitle}</p>
+          <p className="mt-1 text-sm text-gray-400">{subtitle}</p>
         )}
       </div>
       {action && <div className="flex-shrink-0 ml-4">{action}</div>}

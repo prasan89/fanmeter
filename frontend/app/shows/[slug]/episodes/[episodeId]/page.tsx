@@ -47,7 +47,7 @@ export default async function EpisodePage({ params }: EpisodePageProps) {
     episode.status === "live" ? "live" : episode.status === "upcoming" ? "upcoming" : "completed";
 
   return (
-    <div className="min-h-screen bg-surface-secondary">
+    <div className="min-h-screen bg-violet-50">
       {/* Hero thumbnail */}
       <div className="relative h-[280px] sm:h-[420px] overflow-hidden">
         {episode.thumbnail ? (
@@ -60,7 +60,7 @@ export default async function EpisodePage({ params }: EpisodePageProps) {
             sizes="100vw"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-hero flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-violet-700 via-purple-600 to-pink-500 flex items-center justify-center">
             <Play className="w-16 h-16 text-white/40" />
           </div>
         )}
@@ -93,7 +93,7 @@ export default async function EpisodePage({ params }: EpisodePageProps) {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Meta bar */}
-        <div className="flex flex-wrap items-center gap-4 pb-6 border-b border-gray-200 text-sm text-text-muted">
+        <div className="flex flex-wrap items-center gap-4 pb-6 border-b border-gray-200 text-sm text-gray-400">
           {episode.airDate && (
             <div className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
@@ -108,7 +108,7 @@ export default async function EpisodePage({ params }: EpisodePageProps) {
           )}
           <Link
             href={`/shows/${slug}`}
-            className="ml-auto text-brand-purple font-medium hover:underline text-sm"
+            className="ml-auto text-violet-600 font-medium hover:underline text-sm"
           >
             All Episodes →
           </Link>
@@ -117,11 +117,11 @@ export default async function EpisodePage({ params }: EpisodePageProps) {
         {/* Description */}
         {episode.description ? (
           <div className="py-8">
-            <h2 className="text-lg font-bold text-text-primary mb-3">About This Episode</h2>
-            <p className="text-text-secondary leading-relaxed">{episode.description}</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">About This Episode</h2>
+            <p className="text-gray-600 leading-relaxed">{episode.description}</p>
           </div>
         ) : (
-          <div className="py-12 text-center text-text-muted">
+          <div className="py-12 text-center text-gray-400">
             <Play className="w-10 h-10 mx-auto mb-3 opacity-40" />
             <p>Episode details coming soon.</p>
           </div>
@@ -130,11 +130,11 @@ export default async function EpisodePage({ params }: EpisodePageProps) {
         {/* Coming soon voting */}
         <div className="mt-4 bg-white rounded-2xl p-8 text-center border border-dashed border-purple-200">
           <div className="text-4xl mb-3">🗳️</div>
-          <h3 className="font-bold text-text-primary mb-1">Live Voting</h3>
-          <p className="text-sm text-text-muted">Vote on this episode&apos;s highlights — coming soon</p>
+          <h3 className="font-bold text-gray-900 mb-1">Live Voting</h3>
+          <p className="text-sm text-gray-400">Vote on this episode&apos;s highlights — coming soon</p>
           <Link
             href="/vote"
-            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-gradient-brand text-white font-semibold rounded-xl text-sm hover:shadow-brand-lg hover:scale-105 transition-all"
+            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:scale-105 transition-all"
           >
             Get Notified
           </Link>

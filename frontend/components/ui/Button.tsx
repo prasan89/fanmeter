@@ -10,13 +10,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles = {
   primary:
-    "bg-gradient-brand text-white shadow-brand-sm hover:shadow-brand-lg hover:scale-[1.02] active:scale-[0.98]",
+    "bg-gradient-to-r from-violet-600 to-pink-500 text-white shadow hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]",
   secondary:
-    "bg-surface-tertiary text-brand-purple hover:bg-brand-purple/10 border border-brand-purple/20",
+    "bg-violet-100 text-violet-600 hover:bg-violet-600/10 border border-violet-300/20",
   outline:
-    "bg-transparent text-brand-purple border-2 border-brand-purple hover:bg-brand-purple hover:text-white",
+    "bg-transparent text-violet-600 border-2 border-violet-300 hover:bg-violet-600 hover:text-white",
   ghost:
-    "bg-transparent text-text-secondary hover:text-brand-purple hover:bg-surface-tertiary",
+    "bg-transparent text-gray-600 hover:text-violet-600 hover:bg-violet-100",
   danger:
     "bg-red-500 text-white hover:bg-red-600 shadow-sm hover:shadow-md",
 };

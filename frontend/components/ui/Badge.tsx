@@ -11,8 +11,8 @@ const variantStyles = {
   completed: "bg-gray-100 text-gray-600 border border-gray-200",
   active: "bg-emerald-50 text-emerald-600 border border-emerald-200",
   eliminated: "bg-gray-100 text-gray-500 border border-gray-200",
-  trending: "bg-brand-purple/10 text-brand-purple border border-brand-purple/20",
-  new: "bg-gradient-brand text-white border-0",
+  trending: "bg-violet-600/10 text-violet-600 border border-violet-300/20",
+  new: "bg-gradient-to-r from-violet-600 to-pink-500 text-white border-0",
 };
 
 const dotStyles = {
@@ -21,7 +21,7 @@ const dotStyles = {
   completed: "bg-gray-400",
   active: "bg-emerald-500",
   eliminated: "bg-gray-400",
-  trending: "bg-brand-purple",
+  trending: "bg-violet-600",
   new: "bg-white",
 };
 
