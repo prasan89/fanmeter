@@ -1,4 +1,4 @@
-import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult, VotingRoundDto, CastVoteResponse, RankingsDto, AddFavouriteResponse } from "@/types";
+import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult, VotingRoundDto, CastVoteResponse, RankingsDto, AddFavouriteResponse, EvictionPollDto, CastEvictionVoteResponse } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
@@ -111,3 +111,37 @@ export async function addFavourite(
   return data.data;
 }
 
+export async function getActiveEvictionPoll(seasonId: number): Promise<EvictionPollDto | null> {
+  const res = await fetch(`${API_BASE}/api/seasons/${seasonId}/eviction-poll`, {
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  const data = (await res.json()) as ApiResponse<EvictionPollDto | null>;
+  return data.data ?? null;
+}
+
+export async function castEvictionVote(
+  seasonId: number,
+  pollId: number,
+  contestantId: number,
+  voterKey: string,
+): Promise<CastEvictionVoteResponse> {
+  const res = await fetch(`${API_BASE}/api/seasons/${seasonId}/eviction-vote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pollId, contestantId, voterKey }),
+  });
+  const data = (await res.json()) as ApiResponse<CastEvictionVoteResponse>;
+  return data.data;
+}
+
+export async function getEvictionHistory(seasonId: number): Promise<EvictionPollDto[]> {
+  const res = await fetch(`${API_BASE}/api/seasons/${seasonId}/eviction-history`, {
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  const data = (await res.json()) as ApiResponse<EvictionPollDto[]>;
+  return data.data ?? [];
+}

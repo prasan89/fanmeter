@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AlertCircle, ChevronLeft, RefreshCw } from "lucide-react";
 import { getRankings, addFavourite } from "@/lib/api";
 import type { ContestantRankingDto, RankingsDto } from "@/types";
+import { EvictionTab } from "./EvictionTab";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -518,11 +519,15 @@ function RankingsView({ eventSlug }: { eventSlug: EventSlug }) {
 
 // ── EventPage (main export) ───────────────────────────────────────────────────
 
+type Tab = "rankings" | "eviction";
+
 function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
   const cfg = EVENT_CONFIG[eventSlug];
+  const [activeTab, setActiveTab] = useState<Tab>("rankings");
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Sticky sub-header */}
       <div className="bg-white border-b border-gray-100 sticky top-14 z-40">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-3 h-12">
@@ -536,18 +541,41 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
             </Link>
             <span className="text-gray-200 select-none flex-shrink-0">|</span>
             <span className="text-sm font-bold text-gray-800 truncate flex-1 min-w-0">{cfg.name}</span>
-            <span className="text-xs text-rose-500 font-semibold flex-shrink-0 flex items-center gap-1">
-              <svg viewBox="0 0 24 24" width={12} height={12} aria-hidden>
-                <path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-              Rankings
-            </span>
+          </div>
+          {/* Tab bar */}
+          <div className="flex gap-0 -mb-px">
+            <button
+              onClick={() => setActiveTab("rankings")}
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+                activeTab === "rankings"
+                  ? "border-rose-500 text-rose-600"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              ❤️ Fan Rankings
+            </button>
+            <button
+              onClick={() => setActiveTab("eviction")}
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+                activeTab === "eviction"
+                  ? "border-rose-500 text-rose-600"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              🔴 This Week&apos;s Eviction
+            </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
-        <RankingsView eventSlug={eventSlug} />
+        {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
+        {activeTab === "eviction" && (
+          <EvictionTab
+            seasonId={cfg.seasonId}
+            showSlug={cfg.showSlug}
+          />
+        )}
       </div>
     </div>
   );

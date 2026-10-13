@@ -133,3 +133,35 @@ export interface AddFavouriteResponse {
   newFavouriteCount: number;
 }
 
+export interface EvictionNomineeDto {
+  contestantId: number;
+  contestantName: string;
+  contestantSlug: string;
+  profileImage: string | null;
+  voteCount: number;
+  voteShare: number;
+  rank: number;
+}
+
+export interface EvictionPollDto {
+  id: number;
+  seasonId: number;
+  seasonName: string;
+  showSlug: string;
+  weekNumber: number;
+  weekLabel: string | null;
+  voteMode: "save" | "evict";
+  status: "draft" | "open" | "closed" | "archived";
+  opensAt: string | null;
+  closesAt: string | null;
+  sourceVerified: boolean;
+  nominees: EvictionNomineeDto[];
+  updatedAt: string;
+}
+
+export interface CastEvictionVoteResponse {
+  success: boolean;
+  message: string;
+  newVoteCount: number;
+  contestantId: number;
+}

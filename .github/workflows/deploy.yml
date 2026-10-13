@@ -62,7 +62,7 @@ jobs:
             --min-instances=0 \
             --max-instances=5 \
             --set-secrets=DATABASE_URL=fanclash-db-url:latest,DATABASE_USER=fanclash-db-user:latest,DATABASE_PASSWORD=fanclash-db-password:latest \
-            --set-env-vars=CORS_ALLOWED_ORIGINS=${{ secrets.FRONTEND_URL }}
+            --set-env-vars=CORS_ALLOWED_ORIGINS=${{ secrets.FRONTEND_URL }},ADMIN_SECRET=${{ secrets.ADMIN_SECRET }}
 
   deploy-frontend:
     name: Deploy Frontend
