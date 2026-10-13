@@ -1,0 +1,17 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--platform'
+      - 'linux/amd64'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/fanclash-prod/fanclash-docker/fanclash-api:latest'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/fanclash-prod/fanclash-docker/fanclash-api:m4'
+      - '.'
+images:
+  - 'us-central1-docker.pkg.dev/fanclash-prod/fanclash-docker/fanclash-api:latest'
+  - 'us-central1-docker.pkg.dev/fanclash-prod/fanclash-docker/fanclash-api:m4'
+timeout: '900s'
+options:
+  machineType: 'E2_HIGHCPU_8'

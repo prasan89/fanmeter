@@ -13,20 +13,20 @@ interface EpisodePageProps {
 }
 
 export async function generateMetadata({ params }: EpisodePageProps) {
-  const { slug, episodeId } = await params;
+  const { episodeId } = await params;
   try {
     const episode = await getEpisode(Number(episodeId));
     return {
-      title: `${episode.title} — FanClash`,
-      description: episode.description ?? `Watch episode ${episode.episodeNumber}: ${episode.title} on FanClash.`,
+      title: `${episode.title} — FanMeter`,
+      description: episode.description ?? `Watch episode ${episode.episodeNumber}: ${episode.title} on FanMeter.`,
       openGraph: {
-        title: `${episode.title} — FanClash`,
-        description: episode.description ?? `Watch episode ${episode.episodeNumber}: ${episode.title} on FanClash.`,
+        title: `${episode.title} — FanMeter`,
+        description: episode.description ?? `Watch episode ${episode.episodeNumber}: ${episode.title} on FanMeter.`,
         images: episode.thumbnail ? [episode.thumbnail] : [],
       },
     };
   } catch {
-    return { title: `Episode — FanClash` };
+    return { title: `Episode — FanMeter` };
   }
 }
 

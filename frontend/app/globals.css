@@ -26,16 +26,10 @@
   }
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
 html, body {
   max-width: 100vw;
   overflow-x: hidden;
-  background-color: #f8f7ff;
+  background-color: #f8fafc;
   color: #1a1a2e;
 }
 
@@ -55,10 +49,12 @@ html { scroll-behavior: smooth; }
 ::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-  line-height: 1.2;
-  color: #1a1a2e;
-}
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+    color: #1a1a2e;
+  }
 
-img { max-width: 100%; height: auto; }
+  img { max-width: 100%; height: auto; }
+}

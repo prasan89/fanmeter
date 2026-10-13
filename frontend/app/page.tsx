@@ -1,185 +1,181 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Flame } from "lucide-react";
-import { getShows, getSeasonContestants, getShowSeasons } from "@/lib/api";
-import { ShowCard } from "@/components/ui/ShowCard";
-import { ContestantCard } from "@/components/ui/ContestantCard";
-import type { Show, Contestant } from "@/types";
+import Image from "next/image";
+import { AlertCircle } from "lucide-react";
+import { getShowSeasons, getActiveRound } from "@/lib/api";
+
+export const metadata: Metadata = {
+  title: "FanMeter — Bigg Boss Fan Voting",
+  description:
+    "Vote for your favourite Bigg Boss Tamil 10 and Telugu 10 contestant. Independent community poll — not an official broadcaster vote.",
+  openGraph: {
+    title: "FanMeter — Bigg Boss Fan Voting",
+    description: "Independent community voting for Bigg Boss Tamil 10 and Telugu 10.",
+    type: "website",
+  },
+};
+
+const EVENTS = [
+  {
+    eventSlug:   "bigg-boss-tamil-10",
+    showSlug:    "bigg-boss-tamil",
+    title:       "Bigg Boss Tamil 10",
+    subtitle:    "Season 10 · Carnivizha",
+    host:        "Vijay Sethupathi",
+    network:     "Star Vijay & JioHotstar",
+    heroImage:   "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800",
+    gradFrom:    "from-pink-600",
+    gradTo:      "to-rose-700",
+    accentBg:    "bg-rose-50",
+    accentBorder:"border-rose-200",
+    accentText:  "text-rose-700",
+    btnClass:    "bg-rose-600 hover:bg-rose-700",
+  },
+  {
+    eventSlug:   "bigg-boss-telugu-10",
+    showSlug:    "bigg-boss-telugu",
+    title:       "Bigg Boss Telugu 10",
+    subtitle:    "Season 10 · Dasavatharam",
+    host:        "Nagarjuna Akkineni",
+    network:     "Star Maa & JioHotstar",
+    heroImage:   "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800",
+    gradFrom:    "from-blue-600",
+    gradTo:      "to-indigo-700",
+    accentBg:    "bg-blue-50",
+    accentBorder:"border-blue-200",
+    accentText:  "text-blue-700",
+    btnClass:    "bg-blue-600 hover:bg-blue-700",
+  },
+] as const;
+
+async function getEventStatus(showSlug: string) {
+  try {
+    const seasons = await getShowSeasons(showSlug);
+    const live = seasons.find((s) => s.status === "live") ?? seasons[0];
+    if (!live) return { isLive: false, roundOpen: false, contestantCount: 0 };
+    const round = await getActiveRound(live.id).catch(() => null);
+    return {
+      isLive: live.status === "live",
+      roundOpen: round?.status === "open",
+      contestantCount: round?.results?.length ?? 0,
+    };
+  } catch {
+    return { isLive: false, roundOpen: false, contestantCount: 0 };
+  }
+}
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "FanClash — Where Fandoms Battle",
-  description: "Vote for your favorites, track contestants, and join the fan war.",
-};
-
-const CATEGORIES = [
-  { slug: "reality-tv", label: "Reality TV", icon: "📺" },
-  { slug: "music",      label: "Music",      icon: "🎵" },
-  { slug: "sports",     label: "Sports",     icon: "⚽" },
-  { slug: "k-pop",      label: "K-pop",      icon: "🎤" },
-  { slug: "cricket",    label: "Cricket",    icon: "🏏" },
-  { slug: "entertainment", label: "Entertainment", icon: "🎬" },
-];
-
 export default async function HomePage() {
-  let shows: Show[] = [];
-  let featuredContestants: Contestant[] = [];
-
-  try { shows = await getShows(); } catch { /* offline */ }
-
-  const liveShows = shows.filter((s) => s.status === "live");
-  const trendingShows = [...liveShows, ...shows.filter((s) => s.status !== "live")].slice(0, 3);
-  const featuredShow = liveShows[0] ?? shows[0];
-
-  if (featuredShow) {
-    try {
-      const seasons = await getShowSeasons(featuredShow.slug);
-      if (seasons.length > 0) {
-        const season = seasons.find((s) => s.status === "live") ?? seasons[0];
-        const all = await getSeasonContestants(season.id);
-        featuredContestants = all.filter((c) => c.status === "active").slice(0, 5);
-      }
-    } catch { /* no contestants */ }
-  }
+  const [tamilStatus, teluguStatus] = await Promise.all([
+    getEventStatus("bigg-boss-tamil"),
+    getEventStatus("bigg-boss-telugu"),
+  ]);
+  const statuses = [tamilStatus, teluguStatus];
 
   return (
-    <div className="min-h-screen">
-
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-violet-700 via-purple-600 to-pink-500 px-6 pt-16 pb-28 sm:px-10 md:pt-24 md:pb-36">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative max-w-3xl">
-          {liveShows.length > 0 && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500/20 border border-red-400/30 rounded-full mb-6">
-              <span className="w-2 h-2 rounded-full bg-red-400 animate-[pulseLive_2s_infinite]" />
-              <span className="text-sm font-semibold text-white">
-                {liveShows.length} Show{liveShows.length !== 1 ? "s" : ""} Live Now
-              </span>
-            </div>
-          )}
-
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight tracking-tight mb-4">
-            FANDOMS<br />
-            <span className="relative inline-block">
-              BATTLE
-              <span className="absolute -bottom-1 left-0 w-full h-1 bg-orange-400 rounded-full" />
-            </span>
-            <br />HERE
-          </h1>
-
-          <p className="text-lg text-white/75 mt-6 mb-8">Vote · Support · Discuss · Climb the Leaderboard</p>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/shows" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-violet-700 font-black rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all text-base">
-              Explore Shows <ArrowRight className="w-5 h-5" />
-            </Link>
-            {liveShows.length > 0 && (
-              <Link href="/shows?status=live" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white/15 text-white font-semibold rounded-2xl border border-white/30 hover:bg-white/25 transition-all text-base">
-                <span className="w-2 h-2 rounded-full bg-red-400 animate-[pulseLive_2s_infinite]" />
-                Vote Live Now
-              </Link>
-            )}
-          </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Page title */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 text-center">
+          <h1 className="text-2xl font-black text-gray-900">Choose an event</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            Vote for your favourite contestant in the ongoing season
+          </p>
         </div>
+      </div>
 
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 80" fill="none" preserveAspectRatio="none">
-            <path d="M0 80L1440 80L1440 20C1200 60 960 0 720 20C480 40 240 0 0 20L0 80Z" fill="#F8F7FF" />
-          </svg>
-        </div>
-      </section>
-
-      {/* TRENDING SHOWS */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-8 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
-              <Flame className="w-6 h-6 text-orange-500" /> Trending Shows
-            </h2>
-            <p className="text-sm text-gray-400 mt-1">The hottest shows right now</p>
-          </div>
-          <Link href="/shows" className="inline-flex items-center gap-1 text-sm font-semibold text-violet-600 hover:gap-2 transition-all">
-            See All <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        {trendingShows.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {trendingShows.map((show) => <ShowCard key={show.id} show={show} />)}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1,2,3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow h-64 animate-pulse">
-                <div className="h-48 bg-gray-100" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-gray-100 rounded w-3/4" />
-                  <div className="h-3 bg-gray-100 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* FEATURED CONTESTANTS */}
-      {featuredContestants.length > 0 && featuredShow && (
-        <section className="bg-violet-50 py-12">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-black text-gray-900">⭐ Featured Contestants</h2>
-                <p className="text-sm text-gray-400 mt-1">Currently active on {featuredShow.name}</p>
-              </div>
-              <Link href={`/shows/${featuredShow.slug}`} className="inline-flex items-center gap-1 text-sm font-semibold text-violet-600 hover:gap-2 transition-all">
-                View All <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {featuredContestants.map((c, i) => (
-                <ContestantCard key={c.id} contestant={c} rank={i + 1} showSlug={featuredShow.slug} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* CATEGORIES */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-8 py-12">
-        <h2 className="text-2xl font-black text-gray-900 mb-2">Browse by Category</h2>
-        <p className="text-sm text-gray-400 mb-6">Find your fandom</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {CATEGORIES.map((cat) => {
-            const count = shows.filter((s) => s.category === cat.slug).length;
+      {/* Event cards */}
+      <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {EVENTS.map((ev, i) => {
+            const st = statuses[i];
             return (
-              <Link key={cat.slug} href={`/shows?category=${cat.slug}`}
-                className="bg-white rounded-2xl p-5 text-center shadow hover:shadow-md hover:-translate-y-1 transition-all duration-200 group">
-                <div className="text-3xl mb-2">{cat.icon}</div>
-                <div className="font-bold text-sm text-gray-900 group-hover:text-violet-600 transition-colors">{cat.label}</div>
-                {count > 0 && <div className="text-xs text-gray-400 mt-0.5">{count} show{count !== 1 ? "s" : ""}</div>}
-              </Link>
+              <article
+                key={ev.eventSlug}
+                className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"
+              >
+                {/* Poster */}
+                <div className={`relative h-52 bg-gradient-to-br ${ev.gradFrom} ${ev.gradTo} overflow-hidden`}>
+                  <Image
+                    src={ev.heroImage}
+                    alt={ev.title}
+                    fill
+                    className="object-cover mix-blend-overlay opacity-25"
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                    priority
+                  />
+                  {/* Status badge */}
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                    {st.isLive ? (
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        LIVE
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">
+                        Season 10
+                      </span>
+                    )}
+                    {st.roundOpen && (
+                      <span className="px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow">
+                        Voting open
+                      </span>
+                    )}
+                  </div>
+                  {/* Title overlay at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-4">
+                    <h2 className="text-lg font-black text-white leading-tight">{ev.title}</h2>
+                    <p className="text-white/70 text-xs mt-0.5">{ev.subtitle}</p>
+                  </div>
+                </div>
+
+                {/* Card body */}
+                <div className="p-4 flex flex-col flex-1">
+                  {/* Host + network */}
+                  <div className={`flex items-center gap-3 px-3 py-2.5 ${ev.accentBg} rounded-xl border ${ev.accentBorder} mb-4`}>
+                    <span className="text-base flex-shrink-0">🎬</span>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Host</p>
+                      <p className={`text-sm font-bold ${ev.accentText} truncate`}>{ev.host}</p>
+                    </div>
+                    <div className="ml-auto min-w-0 text-right">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Network</p>
+                      <p className="text-xs font-medium text-gray-600 truncate">{ev.network}</p>
+                    </div>
+                  </div>
+
+                  {/* Contestant count */}
+                  {st.contestantCount > 0 && (
+                    <p className="text-xs text-gray-400 mb-3 text-center">
+                      {st.contestantCount} contestants in the running
+                    </p>
+                  )}
+
+                  {/* CTA */}
+                  <div className="mt-auto">
+                    <Link
+                      href={`/events/${ev.eventSlug}`}
+                      className={`w-full inline-flex items-center justify-center gap-2 py-3 ${ev.btnClass} text-white font-bold rounded-xl text-sm transition-all shadow-sm hover:shadow`}
+                    >
+                      Enter Event →
+                    </Link>
+                  </div>
+                </div>
+              </article>
             );
           })}
         </div>
-      </section>
 
-      {/* CTA */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-8 pb-14">
-        <div className="relative overflow-hidden bg-gradient-to-br from-violet-700 via-purple-600 to-pink-500 rounded-3xl p-8 sm:p-14 text-center shadow-2xl">
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative">
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">Your Fandom Needs You</h2>
-            <p className="text-white/75 mb-8 max-w-xl mx-auto text-lg">Join millions of fans. Every vote counts.</p>
-            <Link href="/shows" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-violet-700 font-black rounded-2xl shadow-xl hover:scale-105 transition-all">
-              Browse All Shows <Flame className="w-4 h-4" />
-            </Link>
-          </div>
+        {/* Disclaimer */}
+        <div className="flex items-start gap-2.5 p-3 bg-blue-50 border border-blue-100 rounded-xl mt-6">
+          <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-blue-700 leading-relaxed">
+            <strong>FanMeter is an independent fan community platform.</strong> Votes here do not affect
+            official Bigg Boss evictions. Official voting: Star Vijay / JioHotstar (Tamil) · Star Maa / JioHotstar (Telugu).
+          </p>
         </div>
-      </section>
-
+      </div>
     </div>
   );
 }

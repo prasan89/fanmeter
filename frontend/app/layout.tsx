@@ -12,12 +12,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FanClash — Fandoms Battle Here",
-  description: "Vote, support your favorites, discuss, and climb the leaderboard. FanClash is the ultimate fan engagement platform.",
-  keywords: ["fan platform", "voting", "reality tv", "bigg boss", "music", "sports", "fandom"],
+  title: "FanMeter — Bigg Boss Fan Community",
+  description: "Vote for your favourite Bigg Boss Tamil 10 and Telugu 10 contestants. Community polls, live rankings, and fan battles. Not an official broadcaster vote.",
+  keywords: ["bigg boss", "bigg boss tamil 10", "bigg boss telugu 10", "fan voting", "reality tv", "community poll"],
   openGraph: {
-    title: "FanClash — Fandoms Battle Here",
-    description: "Vote • Support • Discuss • Climb the Leaderboard",
+    title: "FanMeter — Bigg Boss Fan Community",
+    description: "Vote for your favourite Bigg Boss contestant. Live community rankings and fan polls.",
     type: "website",
   },
 };
@@ -29,9 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-screen bg-violet-50">
+      <body className="min-h-screen bg-slate-50">
         <Header />
-        <main className="pb-20 md:pb-0">{children}</main>
+        <main className="pb-16 md:pb-0">{children}</main>
         <Footer />
         <MobileNav />
       </body>

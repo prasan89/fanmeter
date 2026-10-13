@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ShowNotFound() {
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 text-center">
@@ -6,12 +8,12 @@ export default function ShowNotFound() {
       <p className="text-gray-400 mb-8 max-w-md">
         This show doesn&apos;t exist or may have been removed. Browse all available shows below.
       </p>
-      <a
+      <Link
         href="/shows"
         className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-semibold rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all"
       >
         Browse All Shows
-      </a>
+      </Link>
     </div>
   );
 }

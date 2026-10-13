@@ -65,3 +65,71 @@ export interface SearchResult {
   contestants: Contestant[];
   total: number;
 }
+
+export interface ContestantVoteDto {
+  contestantId: number;
+  contestantName: string;
+  contestantSlug: string;
+  profileImage: string | null;
+  status: string;
+  voteCount: number;
+  rank: number;
+}
+
+export interface VotingRoundDto {
+  id: number;
+  seasonId: number;
+  seasonName: string;
+  showSlug: string;
+  title: string;
+  status: "draft" | "open" | "closed";
+  opensAt: string | null;
+  closesAt: string | null;
+  createdAt: string;
+  results: ContestantVoteDto[];
+}
+
+export interface CastVoteResponse {
+  success: boolean;
+  message: string;
+  voteId: number | null;
+  contestantId: number;
+  newTotalVotes: number;
+}
+
+export interface ContestantRankingDto {
+  contestantId: number;
+  contestantName: string;
+  contestantSlug: string;
+  profileImage: string | null;
+  status: string;
+  favouriteCount: number;
+  rank: number;
+  voteShare: number;
+}
+
+export interface RankingsDto {
+  seasonId: number;
+  seasonName: string;
+  showSlug: string;
+  rankings: ContestantRankingDto[];
+  myFavourites: number[];
+  updatedAt: string;
+}
+
+export interface ToggleFavouriteResponse {
+  success: boolean;
+  message: string;
+  favourited: boolean;
+  contestantId: number;
+  newFavouriteCount: number;
+}
+
+export interface AddFavouriteResponse {
+  success: boolean;
+  message: string;
+  duplicate: boolean;
+  contestantId: number;
+  newFavouriteCount: number;
+}
+

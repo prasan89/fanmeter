@@ -1,4 +1,4 @@
-import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult } from "@/types";
+import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult, VotingRoundDto, CastVoteResponse, RankingsDto, AddFavouriteResponse } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
@@ -68,3 +68,46 @@ export async function search(q: string): Promise<SearchResult> {
   const data = (await res.json()) as ApiResponse<SearchResult>;
   return data.data;
 }
+
+export async function getActiveRound(seasonId: number): Promise<VotingRoundDto> {
+  const res = await fetchApi<ApiResponse<VotingRoundDto>>(`/api/seasons/${seasonId}/active-round`);
+  return res.data;
+}
+
+export async function getRoundResults(roundId: number): Promise<VotingRoundDto> {
+  const res = await fetchApi<ApiResponse<VotingRoundDto>>(`/api/voting-rounds/${roundId}/results`);
+  return res.data;
+}
+
+export async function castVote(votingRoundId: number, contestantId: number, voterKey: string): Promise<CastVoteResponse> {
+  const res = await fetch(`${API_BASE}/api/votes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ votingRoundId, contestantId, voterKey }),
+  });
+  const data = (await res.json()) as ApiResponse<CastVoteResponse>;
+  return data.data;
+}
+
+export async function getRankings(seasonId: number, voterKey?: string): Promise<RankingsDto> {
+  const qs = voterKey ? `?voterKey=${encodeURIComponent(voterKey)}` : "";
+  const res = await fetchApi<ApiResponse<RankingsDto>>(`/api/seasons/${seasonId}/rankings${qs}`);
+  return res.data;
+}
+
+export async function addFavourite(
+  seasonId: number,
+  contestantId: number,
+  voterKey: string,
+  idempotencyKey: string,
+): Promise<AddFavouriteResponse> {
+  const res = await fetch(`${API_BASE}/api/seasons/${seasonId}/favourites`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contestantId, voterKey, idempotencyKey }),
+  });
+  const data = (await res.json()) as ApiResponse<AddFavouriteResponse>;
+  if (!res.ok) throw new Error(data.message ?? `HTTP ${res.status}`);
+  return data.data;
+}
+

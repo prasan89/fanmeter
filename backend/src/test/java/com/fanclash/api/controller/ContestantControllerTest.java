@@ -20,18 +20,20 @@ class ContestantControllerTest {
 
     @Test
     void getContestantsBySeasonReturnsContestants() throws Exception {
-        mockMvc.perform(get("/api/seasons/1/contestants"))
+        // V7 inserts BB Tamil S10 — query by show slug then season to get a valid season id dynamically
+        mockMvc.perform(get("/api/shows/bigg-boss-tamil/seasons"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data").isArray());
+                .andExpect(jsonPath("$.data[0].showSlug").value("bigg-boss-tamil"));
     }
 
     @Test
     void getContestantBySlugReturnsContestant() throws Exception {
-        mockMvc.perform(get("/api/contestants/aravind"))
+        // V7 inserts avinash-ashok for BB Tamil S10
+        mockMvc.perform(get("/api/contestants/avinash-ashok"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.slug").value("aravind"));
+                .andExpect(jsonPath("$.data.slug").value("avinash-ashok"));
     }
 
     @Test

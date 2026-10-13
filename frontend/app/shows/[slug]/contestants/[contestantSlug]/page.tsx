@@ -17,16 +17,16 @@ export async function generateMetadata({ params }: ContestantPageProps) {
   try {
     const contestant = await getContestant(contestantSlug);
     return {
-      title: `${contestant.name} — FanClash`,
-      description: contestant.bio ?? `Follow ${contestant.name} on FanClash.`,
+      title: `${contestant.name} — FanMeter`,
+      description: contestant.bio ?? `${contestant.name} — Bigg Boss contestant on FanMeter. Vote, check rankings, and follow community polls.`,
       openGraph: {
-        title: `${contestant.name} — FanClash`,
-        description: contestant.bio ?? `Follow ${contestant.name} on FanClash.`,
+        title: `${contestant.name} — FanMeter`,
+        description: contestant.bio ?? `${contestant.name} — Bigg Boss contestant on FanMeter.`,
         images: contestant.profileImage ? [contestant.profileImage] : [],
       },
     };
   } catch {
-    return { title: "Contestant — FanClash" };
+    return { title: "Contestant — FanMeter" };
   }
 }
 
@@ -137,17 +137,19 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
           )}
 
           {/* Vote CTA */}
-          <div className="mt-8 bg-gradient-to-br from-surface-secondary to-white rounded-2xl p-6 text-center border border-gray-100">
-            <p className="text-sm font-semibold text-gray-900 mb-3">
-              Support {contestant.name.split(" ")[0]}
-            </p>
-            <Link
-              href="/vote"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all text-sm"
-            >
-              Vote Now — Coming Soon
-            </Link>
-          </div>
+          {contestant.status === "active" && (
+            <div className="mt-8 bg-violet-50 rounded-2xl p-6 text-center border border-violet-100">
+              <p className="text-sm font-semibold text-gray-900 mb-3">
+                Support {contestant.name.split(" ")[0]}
+              </p>
+              <Link
+                href={`/vote/${slug}`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all text-sm"
+              >
+                Vote Now
+              </Link>
+            </div>
+          )}
 
           {/* Back link */}
           <div className="mt-6 text-center">

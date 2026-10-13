@@ -17,9 +17,10 @@ export function SearchBox() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!query || query.trim().length < 2) {
-      setResults(null);
-      return;
+    const trimmed = query.trim();
+    if (!trimmed || trimmed.length < 2) {
+      const clear = setTimeout(() => setResults(null), 0);
+      return () => clearTimeout(clear);
     }
     const timer = setTimeout(async () => {
       setLoading(true);

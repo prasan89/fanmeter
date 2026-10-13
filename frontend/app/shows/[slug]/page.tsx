@@ -22,20 +22,20 @@ export async function generateMetadata({ params }: ShowPageProps) {
   try {
     const show = await getShow(slug);
     return {
-      title: `${show.name} — FanClash`,
+      title: `${show.name} — FanMeter`,
       description:
         show.description ??
-        `Follow ${show.name} on FanClash. Explore seasons, episodes, and contestants.`,
+        `Follow ${show.name} on FanMeter. Vote, explore rankings, and join fan polls.`,
       openGraph: {
-        title: `${show.name} — FanClash`,
+        title: `${show.name} — FanMeter`,
         description:
           show.description ??
-          `Follow ${show.name} on FanClash. Explore seasons, episodes, and contestants.`,
+          `Follow ${show.name} on FanMeter. Vote, explore rankings, and join fan polls.`,
         images: show.imageUrl ? [show.imageUrl] : [],
       },
     };
   } catch {
-    return { title: "Show — FanClash" };
+    return { title: "Show — FanMeter" };
   }
 }
 
@@ -165,7 +165,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
               </div>
             )}
             <Link
-              href="/vote"
+              href={`/vote/${slug}`}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-semibold rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all text-sm"
             >
               Vote Now
@@ -336,24 +336,24 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
           )}
         </div>
 
-        {/* Coming Soon: Fan Wars */}
+        {/* Quick links */}
         <div className="pb-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link href="/vote" className="group">
+          <Link href={`/vote/${slug}`} className="group">
             <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-purple-200 hover:border-violet-300 hover:shadow transition-all">
               <div className="text-4xl mb-3">🗳️</div>
               <h3 className="font-bold text-gray-900 mb-1 group-hover:text-violet-600 transition-colors">
-                Live Voting
+                Cast Your Vote
               </h3>
-              <p className="text-sm text-gray-400">Vote for your favorites — coming soon</p>
+              <p className="text-sm text-gray-400">Support your favourite contestant</p>
             </div>
           </Link>
-          <Link href="/wars" className="group">
-            <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-pink-200 hover:border-brand-pink hover:shadow transition-all">
-              <div className="text-4xl mb-3">⚔️</div>
+          <Link href={`/rankings?show=${slug}`} className="group">
+            <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-pink-200 hover:border-pink-300 hover:shadow transition-all">
+              <div className="text-4xl mb-3">🏆</div>
               <h3 className="font-bold text-gray-900 mb-1 group-hover:text-pink-500 transition-colors">
-                Fan Wars
+                Community Rankings
               </h3>
-              <p className="text-sm text-gray-400">Battle other fanbases — coming soon</p>
+              <p className="text-sm text-gray-400">See who&apos;s leading the polls</p>
             </div>
           </Link>
         </div>

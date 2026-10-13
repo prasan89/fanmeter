@@ -87,6 +87,14 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- @Tag("slow") tests are included in the default run.
+                         They can be excluded on CI with: -DexcludedGroups=slow -->
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

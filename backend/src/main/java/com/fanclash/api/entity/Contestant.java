@@ -41,6 +41,23 @@ public class Contestant {
     @Column(nullable = false)
     private String status;
 
+    /** Wikipedia source URL for contestant data */
+    @Column(name = "source_url")
+    private String sourceUrl;
+
+    /** Timestamp of last successful Wikipedia verification */
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
+
+    /** Notes from sync — e.g. "Status updated from Wikipedia" */
+    @Column(name = "sync_notes")
+    private String syncNotes;
+
+    /** ok | needs_review | unverified */
+    @Column(name = "sync_flag")
+    @Builder.Default
+    private String syncFlag = "ok";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -52,5 +69,6 @@ public class Contestant {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (syncFlag == null) syncFlag = "ok";
     }
 }
