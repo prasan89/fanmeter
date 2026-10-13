@@ -11,9 +11,22 @@ const EVENT_META: Record<EventSlug, { title: string; description: string }> = {
     title:       "Bigg Boss Telugu 10 — Vote & Rankings | FanMeter",
     description: "Vote for your favourite Bigg Boss Telugu 10 contestant and see live community rankings. Independent fan poll.",
   },
+  "bigg-boss-malayalam-8": {
+    title:       "Bigg Boss Malayalam 8 — Vote & Rankings | FanMeter",
+    description: "Vote for your favourite Bigg Boss Malayalam Season 8 contestant and see live community rankings. Independent fan poll.",
+  },
+  "bigg-boss-kannada-13": {
+    title:       "Bigg Boss Kannada 13 — Vote & Rankings | FanMeter",
+    description: "Vote for your favourite Bigg Boss Kannada Season 13 contestant and see live community rankings. Independent fan poll.",
+  },
 };
 
-const VALID_SLUGS = new Set<EventSlug>(["bigg-boss-tamil-10", "bigg-boss-telugu-10"]);
+const VALID_SLUGS = new Set<EventSlug>([
+  "bigg-boss-tamil-10",
+  "bigg-boss-telugu-10",
+  "bigg-boss-malayalam-8",
+  "bigg-boss-kannada-13",
+]);
 
 interface Props {
   params: Promise<{ eventSlug: string }>;
@@ -34,6 +47,8 @@ export async function generateStaticParams() {
   return [
     { eventSlug: "bigg-boss-tamil-10" },
     { eventSlug: "bigg-boss-telugu-10" },
+    { eventSlug: "bigg-boss-malayalam-8" },
+    { eventSlug: "bigg-boss-kannada-13" },
   ];
 }
 

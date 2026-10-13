@@ -7,7 +7,7 @@ import { Home, Heart } from "lucide-react";
 export function MobileNav() {
   const pathname = usePathname();
 
-  const eventMatch = pathname.match(/^\/events\/(bigg-boss-(?:tamil|telugu)-10)/);
+  const eventMatch = pathname.match(/^\/events\/(bigg-boss-(?:tamil|telugu)-10|bigg-boss-malayalam-8|bigg-boss-kannada-13)/);
   const eventSlug  = eventMatch?.[1];
 
   if (eventSlug) {

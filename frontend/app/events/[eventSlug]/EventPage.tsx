@@ -22,6 +22,18 @@ const EVENT_CONFIG = {
     name:      "Bigg Boss Telugu 10",
     shortName: "Telugu 10",
   },
+  "bigg-boss-malayalam-8": {
+    showSlug:  "bigg-boss-malayalam",
+    seasonId:  8,
+    name:      "Bigg Boss Malayalam 8",
+    shortName: "Malayalam 8",
+  },
+  "bigg-boss-kannada-13": {
+    showSlug:  "bigg-boss-kannada",
+    seasonId:  9,
+    name:      "Bigg Boss Kannada 13",
+    shortName: "Kannada 13",
+  },
 } as const;
 
 export type EventSlug = keyof typeof EVENT_CONFIG;
@@ -493,7 +505,7 @@ function RankingsView({ eventSlug }: { eventSlug: EventSlug }) {
         <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-blue-700 leading-relaxed">
           <strong>FanMeter is an independent fan community platform.</strong> Favourites here do not affect
-          official Bigg Boss evictions. Official voting: Star Vijay / JioHotstar (Tamil) · Star Maa / JioHotstar (Telugu).
+          official Bigg Boss evictions. Official voting: Star Vijay / JioHotstar (Tamil) · Star Maa / JioHotstar (Telugu) · Asianet / JioHotstar (Malayalam) · Colors Kannada / JioHotstar (Kannada).
         </p>
       </div>
 

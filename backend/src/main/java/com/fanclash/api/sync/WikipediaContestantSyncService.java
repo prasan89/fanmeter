@@ -40,14 +40,18 @@ public class WikipediaContestantSyncService {
 
     // Wikipedia page titles for each show season
     private static final Map<String, String> SHOW_WIKI_PAGES = Map.of(
-        "bigg-boss-tamil",  "Bigg_Boss_(Tamil_TV_series)_season_10",
-        "bigg-boss-telugu", "Bigg_Boss_(Telugu_TV_series)_season_10"
+        "bigg-boss-tamil",    "Bigg_Boss_(Tamil_TV_series)_season_10",
+        "bigg-boss-telugu",   "Bigg_Boss_(Telugu_TV_series)_season_10",
+        "bigg-boss-malayalam","Bigg_Boss_(Malayalam_TV_series)_season_8",
+        "bigg-boss-kannada",  "Bigg_Boss_Kannada_season_13"
     );
 
     // Wikipedia source URLs for attribution
     private static final Map<String, String> SHOW_SOURCE_URLS = Map.of(
-        "bigg-boss-tamil",  "https://en.wikipedia.org/wiki/Bigg_Boss_(Tamil_TV_series)_season_10",
-        "bigg-boss-telugu", "https://en.wikipedia.org/wiki/Bigg_Boss_(Telugu_TV_series)_season_10"
+        "bigg-boss-tamil",    "https://en.wikipedia.org/wiki/Bigg_Boss_(Tamil_TV_series)_season_10",
+        "bigg-boss-telugu",   "https://en.wikipedia.org/wiki/Bigg_Boss_(Telugu_TV_series)_season_10",
+        "bigg-boss-malayalam","https://en.wikipedia.org/wiki/Bigg_Boss_(Malayalam_TV_series)_season_8",
+        "bigg-boss-kannada",  "https://en.wikipedia.org/wiki/Bigg_Boss_Kannada_season_13"
     );
 
     private final ContestantRepository contestantRepository;

@@ -7,10 +7,10 @@ import { getShowSeasons, getActiveRound } from "@/lib/api";
 export const metadata: Metadata = {
   title: "FanMeter — Bigg Boss Fan Voting",
   description:
-    "Vote for your favourite Bigg Boss Tamil 10 and Telugu 10 contestant. Independent community poll — not an official broadcaster vote.",
+    "Vote for your favourite Bigg Boss contestant. Independent community polls for Tamil 10, Telugu 10, Malayalam 8, and Kannada 13.",
   openGraph: {
     title: "FanMeter — Bigg Boss Fan Voting",
-    description: "Independent community voting for Bigg Boss Tamil 10 and Telugu 10.",
+    description: "Independent community voting for Bigg Boss Tamil 10, Telugu 10, Malayalam 8, and Kannada 13.",
     type: "website",
   },
 };
@@ -46,6 +46,36 @@ const EVENTS = [
     accentText:  "text-blue-700",
     btnClass:    "bg-blue-600 hover:bg-blue-700",
   },
+  {
+    eventSlug:   "bigg-boss-malayalam-8",
+    showSlug:    "bigg-boss-malayalam",
+    title:       "Bigg Boss Malayalam 8",
+    subtitle:    "Season 8 · Asianet",
+    host:        "Mohanlal",
+    network:     "Asianet & JioHotstar",
+    heroImage:   "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800",
+    gradFrom:    "from-emerald-600",
+    gradTo:      "to-teal-700",
+    accentBg:    "bg-emerald-50",
+    accentBorder:"border-emerald-200",
+    accentText:  "text-emerald-700",
+    btnClass:    "bg-emerald-600 hover:bg-emerald-700",
+  },
+  {
+    eventSlug:   "bigg-boss-kannada-13",
+    showSlug:    "bigg-boss-kannada",
+    title:       "Bigg Boss Kannada 13",
+    subtitle:    "Season 13 · Colors Kannada",
+    host:        "Kichcha Sudeepa",
+    network:     "Colors Kannada & JioHotstar",
+    heroImage:   "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=800",
+    gradFrom:    "from-amber-600",
+    gradTo:      "to-orange-700",
+    accentBg:    "bg-amber-50",
+    accentBorder:"border-amber-200",
+    accentText:  "text-amber-700",
+    btnClass:    "bg-amber-600 hover:bg-amber-700",
+  },
 ] as const;
 
 async function getEventStatus(showSlug: string) {
@@ -67,11 +97,13 @@ async function getEventStatus(showSlug: string) {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [tamilStatus, teluguStatus] = await Promise.all([
+  const [tamilStatus, teluguStatus, malayalamStatus, kannadaStatus] = await Promise.all([
     getEventStatus("bigg-boss-tamil"),
     getEventStatus("bigg-boss-telugu"),
+    getEventStatus("bigg-boss-malayalam"),
+    getEventStatus("bigg-boss-kannada"),
   ]);
-  const statuses = [tamilStatus, teluguStatus];
+  const statuses = [tamilStatus, teluguStatus, malayalamStatus, kannadaStatus];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -172,7 +204,7 @@ export default async function HomePage() {
           <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-blue-700 leading-relaxed">
             <strong>FanMeter is an independent fan community platform.</strong> Votes here do not affect
-            official Bigg Boss evictions. Official voting: Star Vijay / JioHotstar (Tamil) · Star Maa / JioHotstar (Telugu).
+            official Bigg Boss evictions. Official voting: Star Vijay / JioHotstar (Tamil) · Star Maa / JioHotstar (Telugu) · Asianet / JioHotstar (Malayalam) · Colors Kannada / JioHotstar (Kannada).
           </p>
         </div>
       </div>
