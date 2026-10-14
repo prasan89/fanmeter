@@ -23,6 +23,9 @@ public class ContestantFavouriteCount {
     @Column(name = "total", nullable = false)
     private long total;
 
+    @Column(name = "baseline_count", nullable = false)
+    private long baselineCount;
+
     @Column(name = "updated_at", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedAt;

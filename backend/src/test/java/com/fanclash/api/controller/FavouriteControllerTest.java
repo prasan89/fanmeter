@@ -55,11 +55,13 @@ class FavouriteControllerTest {
             "SELECT id FROM contestants WHERE slug = 'debjani-modak'", Long.class);
         // Re-seed count rows (mirroring V11) so atomicIncrement UPDATE always finds an existing row
         jdbc.execute(
-            "INSERT INTO contestant_favourite_counts (season_id, contestant_id, total, updated_at) " +
-            "SELECT season_id, id, 0, CURRENT_TIMESTAMP FROM contestants " +
+            "INSERT INTO contestant_favourite_counts (season_id, contestant_id, total, baseline_count, updated_at) " +
+            "SELECT season_id, id, 0, 0, CURRENT_TIMESTAMP FROM contestants " +
             "WHERE NOT EXISTS (" +
             "  SELECT 1 FROM contestant_favourite_counts cfc " +
             "  WHERE cfc.season_id = contestants.season_id AND cfc.contestant_id = contestants.id)");
+        // Tests use baseline_count = 0 so favouriteCount assertions equal real click counts
+        jdbc.execute("UPDATE contestant_favourite_counts SET baseline_count = 0");
     }
 
     // ── Rankings ──────────────────────────────────────────────────────────────

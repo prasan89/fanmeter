@@ -41,18 +41,22 @@ public class FavouriteService {
             .collect(Collectors.toList());
 
         // Read from pre-aggregated summary table — O(contestants), not O(total_clicks)
-        Map<Long, Long> counts = countRepository.findBySeasonId(seasonId).stream()
+        Map<Long, ContestantFavouriteCount> counts = countRepository.findBySeasonId(seasonId).stream()
             .collect(Collectors.toMap(
                 ContestantFavouriteCount::getContestantId,
-                ContestantFavouriteCount::getTotal));
+                c -> c));
 
         long totalActiveFavourites = contestants.stream()
-            .mapToLong(c -> counts.getOrDefault(c.getId(), 0L))
+            .mapToLong(c -> {
+                ContestantFavouriteCount cfc = counts.get(c.getId());
+                return cfc != null ? cfc.getBaselineCount() + cfc.getTotal() : 0L;
+            })
             .sum();
 
         List<ContestantRankingDto> ranked = contestants.stream()
             .map(c -> {
-                long favCount = counts.getOrDefault(c.getId(), 0L);
+                ContestantFavouriteCount cfc = counts.get(c.getId());
+                long favCount = cfc != null ? cfc.getBaselineCount() + cfc.getTotal() : 0L;
                 double voteShare = totalActiveFavourites > 0
                     ? (favCount * 100.0) / totalActiveFavourites
                     : 0.0;
