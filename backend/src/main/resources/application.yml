@@ -6,6 +6,13 @@ spring:
     username: ${DATABASE_USER:fanclash}
     password: ${DATABASE_PASSWORD:fanclash}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 3000
+      idle-timeout: 300000
+      max-lifetime: 900000
+      leak-detection-threshold: 10000
   jpa:
     hibernate:
       ddl-auto: validate

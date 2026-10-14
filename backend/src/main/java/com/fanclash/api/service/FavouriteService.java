@@ -111,8 +111,8 @@ public class FavouriteService {
             .idempotencyKey(req.idempotencyKey())
             .build();
 
-        // tryInsertFavourite runs in REQUIRES_NEW — its rollback does not affect the caller.
-        boolean inserted = innerService.tryInsertFavourite(fav);
+        // Single REQUIRES_NEW transaction: insert favourite row AND increment counter atomically.
+        boolean inserted = innerService.tryInsertAndIncrement(fav);
 
         if (!inserted) {
             // Concurrent race on same idempotency key — treat as idempotent
@@ -125,7 +125,6 @@ public class FavouriteService {
 
         // Only increment the aggregate counter when we know the row was truly new.
         // atomicIncrement is a single UPDATE statement — safe under concurrent load.
-        innerService.incrementCount(seasonId, req.contestantId());
 
         long newCount = Optional.ofNullable(
                 countRepository.findTotalNative(seasonId, req.contestantId()))

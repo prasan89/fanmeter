@@ -5,7 +5,7 @@
 set -e
 PROJECT_ID=fanclash-prod
 DB_INSTANCE=fanclash-db
-REGION=us-central1
+REGION=asia-south1
 
 echo "=== Step 1: Generate and store database password ==="
 DB_PASS=$(openssl rand -base64 32 | tr -d '/+=')
@@ -55,14 +55,15 @@ gcloud run deploy fanclash-api \
   --project=$PROJECT_ID \
   --allow-unauthenticated \
   --port=8080 \
-  --memory=512Mi \
+  --memory=1Gi \
   --cpu=1 \
-  --min-instances=0 \
+  --min-instances=1 \
   --max-instances=5 \
   --add-cloudsql-instances=$CONNECTION_NAME \
   --set-secrets=DATABASE_PASSWORD=fanclash-db-password:latest \
   --set-secrets=DATABASE_URL=fanclash-db-url:latest \
   --set-secrets=DATABASE_USER=fanclash-db-user:latest \
+  --set-secrets=ADMIN_SECRET=fanclash-admin-secret:latest \
   --set-env-vars=CORS_ALLOWED_ORIGINS=https://fanclash-web-placeholder.run.app
 
 echo "=== Step 8: Get backend URL ==="
@@ -81,7 +82,7 @@ gcloud run deploy fanclash-web \
   --port=3000 \
   --memory=512Mi \
   --cpu=1 \
-  --min-instances=0 \
+  --min-instances=1 \
   --max-instances=5 \
   --set-env-vars=NEXT_PUBLIC_API_URL=$BACKEND_URL
 

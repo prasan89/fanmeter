@@ -50,7 +50,7 @@ const EVENT_CONFIG = {
 
 export type EventSlug = keyof typeof EVENT_CONFIG;
 
-const POLL_INTERVAL_MS = 2000;
+const POLL_INTERVAL_MS = 10_000;
 
 // ── RankIcon ──────────────────────────────────────────────────────────────────
 

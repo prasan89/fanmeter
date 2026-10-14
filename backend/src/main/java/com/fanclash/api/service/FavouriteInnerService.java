@@ -20,25 +20,21 @@ public class FavouriteInnerService {
     private final ContestantFavouriteCountRepository countRepository;
 
     /**
-     * Attempts to insert a favourite row.
-     * Returns true if inserted (new click), false if the idempotency key already existed.
+     * Atomically inserts the favourite row AND increments the counter in one REQUIRES_NEW
+     * transaction. Returns true if a new row was inserted (count incremented), false if the
+     * idempotency key already existed (idempotent retry — no double-count).
+     *
+     * Using a single transaction eliminates the atomicity gap that existed when insert and
+     * increment ran in separate REQUIRES_NEW transactions.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean tryInsertFavourite(ContestantFavourite fav) {
+    public boolean tryInsertAndIncrement(ContestantFavourite fav) {
         try {
             favouriteRepository.saveAndFlush(fav);
+            countRepository.atomicIncrement(fav.getSeason().getId(), fav.getContestant().getId());
             return true;
         } catch (DataIntegrityViolationException e) {
             return false;
         }
-    }
-
-    /**
-     * Atomically increments the pre-seeded aggregate counter via a single UPDATE.
-     * V11 migration ensures every contestant has a row, so UPDATE always matches.
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void incrementCount(Long seasonId, Long contestantId) {
-        countRepository.atomicIncrement(seasonId, contestantId);
     }
 }

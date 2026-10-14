@@ -10,7 +10,11 @@ import java.util.Optional;
 
 @Repository
 public interface EpisodeRepository extends JpaRepository<Episode, Long> {
+
+    @EntityGraph(attributePaths = {"season"})
     List<Episode> findBySeasonIdOrderByEpisodeNumberAsc(Long seasonId);
+
+    @EntityGraph(attributePaths = {"season"})
     List<Episode> findBySeasonIdOrderByEpisodeNumberDesc(Long seasonId);
 
     @EntityGraph(attributePaths = {"season", "season.show"})

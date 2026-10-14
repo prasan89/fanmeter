@@ -4,8 +4,11 @@ import com.fanclash.api.dto.*;
 import com.fanclash.api.service.FavouriteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,7 +24,9 @@ public class FavouriteController {
     public ResponseEntity<ApiResponse<RankingsDto>> getRankings(
             @PathVariable Long seasonId,
             @RequestParam(required = false) String voterKey) {
-        return ResponseEntity.ok(ApiResponse.ok(favouriteService.getRankings(seasonId, voterKey)));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(2, TimeUnit.SECONDS).sMaxAge(2, TimeUnit.SECONDS))
+                .body(ApiResponse.ok(favouriteService.getRankings(seasonId, voterKey)));
     }
 
     /**

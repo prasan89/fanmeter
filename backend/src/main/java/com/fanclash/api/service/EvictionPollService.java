@@ -56,9 +56,8 @@ public class EvictionPollService {
     public List<EvictionPollDto> getPollHistory(Long seasonId) {
         if (!seasonRepository.existsById(seasonId))
             throw new ResourceNotFoundException("Season not found: " + seasonId);
-        return pollRepository.findHistoryBySeasonId(seasonId).stream()
-            .map(p -> toDto(p, buildNominees(p)))
-            .collect(Collectors.toList());
+        List<EvictionPoll> polls = pollRepository.findHistoryBySeasonId(seasonId);
+        return toDtoList(polls);
     }
 
     @Transactional
@@ -162,9 +161,12 @@ public class EvictionPollService {
         nomineeRepository.deleteByPollId(pollId);
         entityManager.flush(); // ensure DELETE is sent before INSERTs to avoid unique-constraint violation
 
+        Map<Long, Contestant> contestantMap = contestantRepository.findAllById(req.contestantIds())
+            .stream().collect(Collectors.toMap(Contestant::getId, c -> c));
+
         List<EvictionNominee> nominees = req.contestantIds().stream().map(cid -> {
-            Contestant c = contestantRepository.findById(cid)
-                .orElseThrow(() -> new ResourceNotFoundException("Contestant not found: " + cid));
+            Contestant c = contestantMap.get(cid);
+            if (c == null) throw new ResourceNotFoundException("Contestant not found: " + cid);
             return EvictionNominee.builder()
                 .poll(poll)
                 .contestant(c)
@@ -191,9 +193,8 @@ public class EvictionPollService {
 
     @Transactional(readOnly = true)
     public List<EvictionPollDto> getAllPollsForSeason(Long seasonId) {
-        return pollRepository.findBySeasonIdOrderByWeekNumberDesc(seasonId).stream()
-            .map(p -> toDto(p, buildNominees(p)))
-            .collect(Collectors.toList());
+        List<EvictionPoll> polls = pollRepository.findBySeasonIdOrderByWeekNumberDesc(seasonId);
+        return toDtoList(polls);
     }
 
     // ── Auto-close expired polls ──────────────────────────────────────────────
@@ -210,6 +211,19 @@ public class EvictionPollService {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private List<EvictionPollDto> toDtoList(List<EvictionPoll> polls) {
+        if (polls.isEmpty()) return Collections.emptyList();
+        List<Long> pollIds = polls.stream().map(EvictionPoll::getId).collect(Collectors.toList());
+        Map<Long, String> attributions = sourceRepository.findLatestByPollIds(pollIds).stream()
+            .collect(Collectors.toMap(
+                s -> s.getPoll().getId(),
+                s -> "HousePulse · " + s.getRetrievedAt(),
+                (a, b) -> a));
+        return polls.stream()
+            .map(p -> toDto(p, buildNominees(p), attributions.get(p.getId())))
+            .collect(Collectors.toList());
+    }
 
     private EvictionPoll loadPoll(Long pollId) {
         return pollRepository.findById(pollId)
@@ -246,11 +260,14 @@ public class EvictionPollService {
     }
 
     private EvictionPollDto toDto(EvictionPoll p, List<EvictionNomineeDto> nominees) {
-        Season season = p.getSeason();
-        // Source attribution from most recent confirmed source
         String attribution = sourceRepository.findTopByPollIdOrderByRetrievedAtDesc(p.getId())
             .map(s -> "HousePulse · " + (p.getUpdatedAt() != null ? p.getUpdatedAt().toString() : ""))
             .orElse(null);
+        return toDto(p, nominees, attribution);
+    }
+
+    private EvictionPollDto toDto(EvictionPoll p, List<EvictionNomineeDto> nominees, String attribution) {
+        Season season = p.getSeason();
         return new EvictionPollDto(
             p.getId(),
             season.getId(),
