@@ -280,8 +280,9 @@ class FavouriteControllerTest {
     // ── Filtering + voteShare tests ───────────────────────────────────────────
 
     @Test
-    void eliminatedContestantNeverAppearsInRankings() throws Exception {
-        // 'anandhi-ajay' is eliminated in the seed data
+    void eliminatedContestantAppearsWithStatusInRankings() throws Exception {
+        // Eliminated contestants ARE returned (frontend filters them for Fan Rankings display),
+        // but their status must be "eliminated" so the frontend knows to hide them.
         Long eliminatedId = jdbc.queryForObject(
             "SELECT id FROM contestants WHERE slug = 'anandhi-ajay'", Long.class);
 
@@ -290,9 +291,9 @@ class FavouriteControllerTest {
             .andReturn();
 
         String body = result.getResponse().getContentAsString();
-        assertThat(body).doesNotContain("anandhi-ajay");
-        assertThat(body).doesNotContain("\"eliminated\"");
-        assertThat(body).doesNotContain("\"contestantId\":" + eliminatedId);
+        assertThat(body).contains("anandhi-ajay");
+        assertThat(body).contains("\"status\":\"eliminated\"");
+        assertThat(body).contains("\"contestantId\":" + eliminatedId);
     }
 
     @Test
@@ -413,13 +414,16 @@ class FavouriteControllerTest {
             "WHERE season_id = ? AND contestant_id = ?",
             tamilSeasonId, eliminatedId);
 
-        // Fetch rankings — eliminated contestant must not appear
-        mockMvc.perform(get("/api/seasons/{id}/rankings", tamilSeasonId))
+        // Fetch rankings — eliminated contestant appears with status=eliminated and correct count
+        var result = mockMvc.perform(get("/api/seasons/{id}/rankings", tamilSeasonId))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.rankings[*].contestantId",
-                not(hasItem(eliminatedId.intValue()))));
+            .andReturn();
 
-        // But their count row must still exist in the DB
+        String body = result.getResponse().getContentAsString();
+        assertThat(body).contains("anandhi-ajay");
+        assertThat(body).contains("\"status\":\"eliminated\"");
+
+        // Their count row must still exist in the DB with the correct total
         Long retained = jdbc.queryForObject(
             "SELECT total FROM contestant_favourite_counts " +
             "WHERE season_id = ? AND contestant_id = ?",

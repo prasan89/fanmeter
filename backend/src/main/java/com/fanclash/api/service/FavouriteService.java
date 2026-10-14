@@ -34,11 +34,11 @@ public class FavouriteService {
         Season season = seasonRepository.findById(seasonId)
             .orElseThrow(() -> new ResourceNotFoundException("Season not found: " + seasonId));
 
-        // Active contestants only — eliminated are excluded from rankings but their historical votes remain
-        List<Contestant> contestants = contestantRepository.findBySeasonIdAndStatus(seasonId, "active")
-            .stream()
-            .sorted(Comparator.comparing(Contestant::getName))
-            .collect(Collectors.toList());
+        // All contestants — frontend filters out eliminated from Fan Rankings display.
+        // Including eliminated here ensures EvictionTab can show their heart counts when
+        // they appear as nominees (contestants can be nominated while still marked eliminated
+        // from a prior week's eviction sync).
+        List<Contestant> contestants = contestantRepository.findBySeasonIdOrderByNameAsc(seasonId);
 
         // Read from pre-aggregated summary table — O(contestants), not O(total_clicks)
         Map<Long, ContestantFavouriteCount> counts = countRepository.findBySeasonId(seasonId).stream()
