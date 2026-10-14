@@ -1,9 +1,3 @@
-/**
- * SEO structured data components using JSON-LD.
- * These are server components — rendered as static <script> tags in the HTML.
- * Do not add "use client" here.
- */
-
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://fanmeter.in";
 
@@ -16,7 +10,6 @@ function JsonLd({ data }: { data: object }) {
   return (
     <script
       type="application/ld+json"
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
