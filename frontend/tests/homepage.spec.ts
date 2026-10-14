@@ -8,6 +8,8 @@ const EVENTS = [
   { slug: "bigg-boss-telugu-10",   host: "Nagarjuna Akkineni",  title: "Bigg Boss Telugu 10" },
   { slug: "bigg-boss-malayalam-8", host: "Mohanlal",            title: "Bigg Boss Malayalam 8" },
   { slug: "bigg-boss-kannada-13",  host: "Kichcha Sudeep",      title: "Bigg Boss Kannada 13" },
+  { slug: "bigg-boss-hindi-20",    host: "Salman Khan",         title: "Bigg Boss Hindi 20" },
+  { slug: "bigg-boss-bangla-3",    host: "Sourav Ganguly",      title: "Bigg Boss Bangla 3" },
 ] as const;
 
 async function goToHomepage(page: Page) {
@@ -19,10 +21,10 @@ async function goToHomepage(page: Page) {
 // ── LIVE badge ────────────────────────────────────────────────────────────────
 
 test.describe("Event cards — LIVE badge", () => {
-  test("all four event cards display the LIVE badge", async ({ page }) => {
+  test("all six event cards display the LIVE badge", async ({ page }) => {
     await goToHomepage(page);
     const liveBadges = page.getByText("LIVE");
-    await expect(liveBadges).toHaveCount(4);
+    await expect(liveBadges).toHaveCount(6);
   });
 });
 
@@ -57,7 +59,7 @@ test.describe("Event cards — host fallback rendering", () => {
     page.on("pageerror", (err) => errors.push(err.message));
     await goToHomepage(page);
     const cards = page.locator("article");
-    await expect(cards).toHaveCount(4);
+    await expect(cards).toHaveCount(6);
     expect(errors).toHaveLength(0);
   });
 });
@@ -79,22 +81,22 @@ test.describe("Event cards — Enter Event navigation", () => {
 // ── Layout — desktop and mobile ───────────────────────────────────────────────
 
 test.describe("Event cards — responsive layout", () => {
-  test("desktop (1280px): all four cards visible", async ({ page }) => {
+  test("desktop (1280px): all six cards visible", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await goToHomepage(page);
     const cards = page.locator("article");
-    await expect(cards).toHaveCount(4);
-    for (let i = 0; i < 4; i++) {
+    await expect(cards).toHaveCount(6);
+    for (let i = 0; i < 6; i++) {
       await expect(cards.nth(i)).toBeVisible();
     }
   });
 
-  test("mobile (375px): all four cards visible", async ({ page }) => {
+  test("mobile (375px): all six cards visible", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await goToHomepage(page);
     const cards = page.locator("article");
-    await expect(cards).toHaveCount(4);
-    for (let i = 0; i < 4; i++) {
+    await expect(cards).toHaveCount(6);
+    for (let i = 0; i < 6; i++) {
       await expect(cards.nth(i)).toBeVisible();
     }
   });

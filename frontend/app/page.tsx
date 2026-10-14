@@ -9,10 +9,10 @@ import { AdSidebar } from "@/components/ads/AdSidebar";
 export const metadata: Metadata = {
   title: "FanMeter — Bigg Boss Fan Voting",
   description:
-    "Vote for your favourite Bigg Boss contestant. Independent community polls for Tamil 10, Telugu 10, Malayalam 8, and Kannada 13.",
+    "Vote for your favourite Bigg Boss contestant. Independent community polls for Tamil 10, Telugu 10, Malayalam 8, Kannada 13, Hindi 20, and Bangla 3.",
   openGraph: {
     title: "FanMeter — Bigg Boss Fan Voting",
-    description: "Independent community voting for Bigg Boss Tamil 10, Telugu 10, Malayalam 8, and Kannada 13.",
+    description: "Independent community voting for Bigg Boss Tamil 10, Telugu 10, Malayalam 8, Kannada 13, Hindi 20, and Bangla 3.",
     type: "website",
   },
 };
@@ -82,6 +82,38 @@ const EVENTS = [
     accentText:  "text-amber-700",
     btnClass:    "bg-amber-600 hover:bg-amber-700",
   },
+  {
+    eventSlug:   "bigg-boss-hindi-20",
+    showSlug:    "bigg-boss-hindi",
+    title:       "Bigg Boss Hindi 20",
+    subtitle:    "Season 20 · Colors TV",
+    host:        "Salman Khan",
+    hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779860981421-salman_khan_hindi_bigg_boss_host/sm.webp",
+    network:     "Colors TV & JioHotstar",
+    heroImage:   "https://media.housepulse.in/studio/season-featured/2026/08/1785688715040-hindi_bigg_boss/master.webp",
+    gradFrom:    "from-purple-700",
+    gradTo:      "to-fuchsia-800",
+    accentBg:    "bg-purple-50",
+    accentBorder:"border-purple-200",
+    accentText:  "text-purple-700",
+    btnClass:    "bg-purple-700 hover:bg-purple-800",
+  },
+  {
+    eventSlug:   "bigg-boss-bangla-3",
+    showSlug:    "bigg-boss-bangla",
+    title:       "Bigg Boss Bangla 3",
+    subtitle:    "Season 3 · Star Jalsha",
+    host:        "Sourav Ganguly",
+    hostImage:   "https://media.housepulse.in/studio/host-photo/2026/09/1788869638270-saurav_ganguly_bangla_bigg_boss_host/sm.webp",
+    network:     "Star Jalsha & JioHotstar",
+    heroImage:   "https://media.housepulse.in/studio/season-featured/2026/09/1788965542371-bigg-boss_bangla/master.webp",
+    gradFrom:    "from-green-700",
+    gradTo:      "to-emerald-800",
+    accentBg:    "bg-green-50",
+    accentBorder:"border-green-200",
+    accentText:  "text-green-700",
+    btnClass:    "bg-green-700 hover:bg-green-800",
+  },
 ] as const;
 
 async function getEventStatus(showSlug: string) {
@@ -103,13 +135,15 @@ async function getEventStatus(showSlug: string) {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [tamilStatus, teluguStatus, malayalamStatus, kannadaStatus] = await Promise.all([
+  const [tamilStatus, teluguStatus, malayalamStatus, kannadaStatus, hindiStatus, banglaStatus] = await Promise.all([
     getEventStatus("bigg-boss-tamil"),
     getEventStatus("bigg-boss-telugu"),
     getEventStatus("bigg-boss-malayalam"),
     getEventStatus("bigg-boss-kannada"),
+    getEventStatus("bigg-boss-hindi"),
+    getEventStatus("bigg-boss-bangla"),
   ]);
-  const statuses = [tamilStatus, teluguStatus, malayalamStatus, kannadaStatus];
+  const statuses = [tamilStatus, teluguStatus, malayalamStatus, kannadaStatus, hindiStatus, banglaStatus];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -153,7 +187,7 @@ export default async function HomePage() {
                         </span>
                       ) : (
                         <span className="px-2.5 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">
-                          Season 10
+                          {ev.subtitle.split(" · ")[0]}
                         </span>
                       )}
                     </div>
@@ -214,7 +248,7 @@ export default async function HomePage() {
             <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-blue-700 leading-relaxed">
               <strong>FanMeter is an independent fan community platform.</strong> Votes here do not affect
-              official Bigg Boss evictions. Official voting: Star Vijay / JioHotstar (Tamil) · Star Maa / JioHotstar (Telugu) · Asianet / JioHotstar (Malayalam) · Colors Kannada / JioHotstar (Kannada).
+              official Bigg Boss evictions. Official voting: Star Vijay / JioHotstar (Tamil) · Star Maa / JioHotstar (Telugu) · Asianet / JioHotstar (Malayalam) · Colors Kannada / JioHotstar (Kannada) · Colors TV / JioHotstar (Hindi) · Star Jalsha / JioHotstar (Bangla).
             </p>
           </div>
         </TwoColumnLayout>
