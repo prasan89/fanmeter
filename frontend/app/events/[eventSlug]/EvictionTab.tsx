@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
-import { AlertCircle, RefreshCw, ChevronDown, ChevronUp, Shield } from "lucide-react";
+import { AlertCircle, RefreshCw, ChevronDown, ChevronUp, Shield, Clock, ExternalLink } from "lucide-react";
 import { getActiveEvictionPoll, castEvictionVote, getEvictionHistory } from "@/lib/api";
-import type { EvictionPollDto, EvictionNomineeDto } from "@/types";
+import type { EvictionPollDto, EvictionNomineeDto, NominationState } from "@/types";
 
 const POLL_INTERVAL_MS   = 30_000;
 const VOTED_KEY          = "fanmeter_eviction_votes"; // localStorage: { pollId: contestantId }
@@ -176,6 +176,124 @@ function PastPollRow({ poll }: { poll: EvictionPollDto }) {
   );
 }
 
+// ── State banners ─────────────────────────────────────────────────────────────
+
+function NominationStateBanner({
+  state,
+  sourceAttribution,
+}: {
+  state: NominationState | null;
+  sourceAttribution: string | null;
+}) {
+  if (!state) return null;
+
+  if (state === "NEEDS_VERIFICATION") {
+    return (
+      <div className="flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl mb-3">
+        <Clock className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+        <div className="text-xs text-amber-800 leading-relaxed">
+          <strong>Nominees pending verification.</strong>{" "}
+          Names were discovered automatically but couldn&apos;t be confirmed against the cast list.
+          Check back soon or{" "}
+          {sourceAttribution
+            ? <a href={sourceAttribution} target="_blank" rel="noopener noreferrer" className="underline font-semibold inline-flex items-center gap-0.5">view source <ExternalLink className="w-3 h-3" /></a>
+            : "check the official source"
+          }.
+        </div>
+      </div>
+    );
+  }
+
+  if (state === "SOURCE_UNAVAILABLE") {
+    return (
+      <div className="flex items-start gap-2.5 p-3 bg-gray-50 border border-gray-200 rounded-xl mb-3">
+        <AlertCircle className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-gray-600 leading-relaxed">
+          <strong>Nomination data temporarily unavailable.</strong>{" "}
+          We&apos;re unable to reach the nominations source right now. The poll will update automatically.
+        </p>
+      </div>
+    );
+  }
+
+  if (state === "NOMINATIONS_PUBLISHED") {
+    return (
+      <div className="flex items-center gap-2 mb-2">
+        {sourceAttribution && (
+          <span className="text-[10px] text-gray-400">
+            Source: <a href={sourceAttribution} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600 inline-flex items-center gap-0.5">HousePulse <ExternalLink className="w-2.5 h-2.5" /></a>
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+function EmptyPollState({
+  state,
+  sourceAttribution,
+}: {
+  state: NominationState | null;
+  sourceAttribution: string | null;
+}) {
+  if (state === "SOURCE_UNAVAILABLE") {
+    return (
+      <div className="flex flex-col items-center justify-center py-14 text-center gap-3">
+        <AlertCircle className="w-10 h-10 text-gray-300" />
+        <p className="text-gray-500 font-semibold">Nomination data temporarily unavailable</p>
+        <p className="text-sm text-gray-400 max-w-xs">
+          We&apos;re unable to fetch nominations right now. The poll will update automatically once the source is reachable.
+        </p>
+      </div>
+    );
+  }
+
+  if (state === "NEEDS_VERIFICATION") {
+    return (
+      <div className="flex flex-col items-center justify-center py-14 text-center gap-3">
+        <Clock className="w-10 h-10 text-amber-300" />
+        <p className="text-gray-500 font-semibold">Nominees being verified</p>
+        <p className="text-sm text-gray-400 max-w-xs">
+          Nominations were discovered but are awaiting verification. Check back shortly.
+        </p>
+        {sourceAttribution && (
+          <a href={sourceAttribution} target="_blank" rel="noopener noreferrer"
+            className="text-xs text-violet-600 font-semibold hover:underline inline-flex items-center gap-1 mt-1">
+            View on HousePulse <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  if (state === "NO_NOMINATIONS_CONFIRMED") {
+    return (
+      <div className="flex flex-col items-center justify-center py-14 text-center gap-3">
+        <Shield className="w-10 h-10 text-gray-300" />
+        <p className="text-gray-500 font-semibold">No eviction this week</p>
+        <p className="text-sm text-gray-400 max-w-xs">
+          HousePulse confirms no nominations have been announced yet for this week.
+        </p>
+      </div>
+    );
+  }
+
+  // Generic / null state — nominations not yet discovered
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+      <Shield className="w-10 h-10 text-gray-300" />
+      <p className="text-gray-500 font-semibold">No active eviction poll this week</p>
+      <p className="text-sm text-gray-400 max-w-xs">
+        Nominations are discovered automatically each week. Check back soon.
+      </p>
+    </div>
+  );
+}
+
 // ── Main EvictionTab ──────────────────────────────────────────────────────────
 
 export function EvictionTab({
@@ -259,6 +377,14 @@ export function EvictionTab({
   }
 
   const votedContestantId = poll ? votedMap[poll.id] : undefined;
+  const nominationState   = poll?.nominationState ?? null;
+  const sourceAttribution = poll?.sourceAttribution ?? null;
+
+  // A poll with nominees that are ready to vote on
+  const hasVotableNominees = poll?.nominees && poll.nominees.length > 0 && poll.status === "open";
+
+  // Show empty state when there's no poll, or poll has no nominees yet
+  const showEmpty = !poll || (!hasVotableNominees && nominationState !== "NOMINATIONS_PUBLISHED");
 
   const officialVotingLinks: Record<string, string> = {
     "bigg-boss-tamil":    "Star Vijay / JioHotstar",
@@ -283,19 +409,16 @@ export function EvictionTab({
         </div>
       </div>
 
-      {/* No active poll */}
-      {!poll && (
-        <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-          <Shield className="w-10 h-10 text-gray-300" />
-          <p className="text-gray-500 font-semibold">No active eviction poll this week</p>
-          <p className="text-sm text-gray-400 max-w-xs">
-            Nominations are discovered automatically each week. Check back soon.
-          </p>
-        </div>
+      {/* State banner (above nominees when poll exists with a state) */}
+      {poll && <NominationStateBanner state={nominationState} sourceAttribution={sourceAttribution} />}
+
+      {/* Empty / pending state */}
+      {showEmpty && (
+        <EmptyPollState state={nominationState} sourceAttribution={sourceAttribution} />
       )}
 
-      {/* Active poll */}
-      {poll && (
+      {/* Active poll with nominees */}
+      {!showEmpty && poll && (
         <>
           {/* Countdown */}
           <div className="flex items-center justify-between mb-3">

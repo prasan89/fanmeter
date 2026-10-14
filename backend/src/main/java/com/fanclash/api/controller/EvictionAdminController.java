@@ -96,4 +96,13 @@ public class EvictionAdminController {
             ? ApiResponse.ok(result)
             : ApiResponse.error("Sync completed with errors.", result));
     }
+
+    @GetMapping("/nomination-sync/dry-run")
+    public ResponseEntity<ApiResponse<NominationSyncService.DryRunResult>> dryRun(
+            @RequestParam String show) {
+        NominationSyncService.DryRunResult result = nominationSyncService.dryRun(show);
+        return ResponseEntity.ok(result.success()
+            ? ApiResponse.ok(result)
+            : ApiResponse.error("Dry-run failed: " + result.error(), result));
+    }
 }

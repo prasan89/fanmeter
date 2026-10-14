@@ -45,6 +45,14 @@ public class EvictionPoll {
     @Column(name = "source_verified", nullable = false)
     private Boolean sourceVerified = false;
 
+    /**
+     * Nomination discovery state:
+     * NOMINATIONS_PUBLISHED, NEEDS_VERIFICATION, SOURCE_UNAVAILABLE,
+     * NO_NOMINATIONS_CONFIRMED, POLL_OPEN, VOTING_CLOSED
+     */
+    @Column(name = "nomination_state")
+    private String nominationState;
+
     @Column(name = "admin_notes", columnDefinition = "TEXT")
     private String adminNotes;
 
@@ -56,7 +64,7 @@ public class EvictionPoll {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "poll", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EvictionNominee> nominees;
+    private List<EvictionNominee> evictionNominees;
 
     @PrePersist
     protected void onCreate() {

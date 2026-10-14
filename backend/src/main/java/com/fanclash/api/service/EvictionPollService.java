@@ -37,8 +37,17 @@ public class EvictionPollService {
         if (!seasonRepository.existsById(seasonId))
             throw new ResourceNotFoundException("Season not found: " + seasonId);
 
-        return pollRepository.findBySeasonIdAndStatus(seasonId, "open")
-            .map(p -> toDto(p, buildNominees(p)));
+        // Prefer an open poll
+        Optional<EvictionPoll> open = pollRepository.findTopBySeasonIdAndStatusOrderByWeekNumberDesc(seasonId, "open");
+        if (open.isPresent()) return Optional.of(toDto(open.get(), buildNominees(open.get())));
+
+        // Fall back to most recent draft (may be NEEDS_VERIFICATION or SOURCE_UNAVAILABLE)
+        Optional<EvictionPoll> recent = pollRepository.findMostRecentBySeasonId(seasonId);
+        if (recent.isPresent() && "draft".equals(recent.get().getStatus())) {
+            return Optional.of(toDto(recent.get(), buildNominees(recent.get())));
+        }
+
+        return Optional.empty();
     }
 
     @Transactional(readOnly = true)
@@ -235,6 +244,10 @@ public class EvictionPollService {
 
     private EvictionPollDto toDto(EvictionPoll p, List<EvictionNomineeDto> nominees) {
         Season season = p.getSeason();
+        // Source attribution from most recent confirmed source
+        String attribution = sourceRepository.findTopByPollIdOrderByRetrievedAtDesc(p.getId())
+            .map(s -> "HousePulse · " + (p.getUpdatedAt() != null ? p.getUpdatedAt().toString() : ""))
+            .orElse(null);
         return new EvictionPollDto(
             p.getId(),
             season.getId(),
@@ -247,8 +260,10 @@ public class EvictionPollService {
             p.getOpensAt() != null ? p.getOpensAt().toString() : null,
             p.getClosesAt() != null ? p.getClosesAt().toString() : null,
             p.getSourceVerified(),
+            p.getNominationState(),
             nominees,
-            p.getUpdatedAt() != null ? p.getUpdatedAt().toString() : null
+            p.getUpdatedAt() != null ? p.getUpdatedAt().toString() : null,
+            attribution
         );
     }
 }

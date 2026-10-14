@@ -143,6 +143,14 @@ export interface EvictionNomineeDto {
   rank: number;
 }
 
+export type NominationState =
+  | "NOMINATIONS_PUBLISHED"
+  | "NEEDS_VERIFICATION"
+  | "SOURCE_UNAVAILABLE"
+  | "NO_NOMINATIONS_CONFIRMED"
+  | "POLL_OPEN"
+  | "VOTING_CLOSED";
+
 export interface EvictionPollDto {
   id: number;
   seasonId: number;
@@ -155,8 +163,10 @@ export interface EvictionPollDto {
   opensAt: string | null;
   closesAt: string | null;
   sourceVerified: boolean;
+  nominationState: NominationState | null;
   nominees: EvictionNomineeDto[];
   updatedAt: string;
+  sourceAttribution: string | null;
 }
 
 export interface CastEvictionVoteResponse {

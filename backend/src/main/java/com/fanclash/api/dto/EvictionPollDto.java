@@ -14,6 +14,10 @@ public record EvictionPollDto(
     String opensAt,
     String closesAt,
     boolean sourceVerified,
+    /** One of: NOMINATIONS_PUBLISHED, NEEDS_VERIFICATION, SOURCE_UNAVAILABLE,
+     *  NO_NOMINATIONS_CONFIRMED, POLL_OPEN, VOTING_CLOSED */
+    String nominationState,
     List<EvictionNomineeDto> nominees,
-    String updatedAt
+    String updatedAt,
+    String sourceAttribution
 ) {}

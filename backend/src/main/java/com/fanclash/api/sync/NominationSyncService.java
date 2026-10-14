@@ -4,58 +4,48 @@ import com.fanclash.api.entity.*;
 import com.fanclash.api.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Daily nomination discovery service.
+ * Nomination discovery service.
  *
- * Scrapes Wikipedia (same MediaWiki API pattern as WikipediaContestantSyncService)
- * and Google News RSS for nomination articles from regional entertainment press.
- * Results are cross-checked: ≥2 agreeing sources → auto-confirm; 1 → flag for admin.
+ * Fetches the HousePulse nominations page for each live Bigg Boss season,
+ * parses the current-week nominee list, and upserts an eviction poll record.
  *
- * On Cloud Run this is triggered via Cloud Scheduler → POST /api/admin/nomination-sync/trigger.
- * The @Scheduled cron is a fallback for local dev.
+ * Poll states (stored in eviction_polls.nomination_state):
+ *   NOMINATIONS_PUBLISHED   — nominees extracted, verified, poll is live
+ *   NEEDS_VERIFICATION      — extracted but could not match enough DB contestants
+ *   SOURCE_UNAVAILABLE      — HTTP/parse failure, last-good snapshot retained
+ *   NO_NOMINATIONS_CONFIRMED — source indicates no nominations this week
+ *
+ * On Cloud Run: POST /api/admin/nomination-sync/trigger (via Cloud Scheduler).
+ * Fallback @Scheduled cron is used in local dev.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class NominationSyncService {
 
-    private static final String MEDIAWIKI_API =
-        "https://en.wikipedia.org/w/api.php";
-    private static final String GOOGLE_NEWS_RSS =
-        "https://news.google.com/rss/search?hl=en-IN&gl=IN&ceid=IN:en&q=";
+    /** HousePulse URL template: {slug} = bigg-boss-{language}, {season} = season-N */
+    private static final String HP_URL_TEMPLATE =
+        "https://housepulse.in/shows/{slug}/{season}/nominations";
 
-    // Wikipedia page titles keyed by show slug
-    private static final Map<String, String> WIKI_PAGES = Map.of(
-        "bigg-boss-tamil",    "Bigg_Boss_(Tamil_TV_series)_season_10",
-        "bigg-boss-telugu",   "Bigg_Boss_(Telugu_TV_series)_season_10",
-        "bigg-boss-malayalam","Bigg_Boss_(Malayalam_TV_series)_season_8",
-        "bigg-boss-kannada",  "Bigg_Boss_Kannada_season_13"
+    /** Approved source registry. Each entry: show-slug → nominations URL */
+    static final Map<String, ShowConfig> SHOW_CONFIGS = Map.of(
+        "bigg-boss-tamil",    new ShowConfig("bigg-boss-tamil",    "season-10", "Bigg Boss Tamil 10"),
+        "bigg-boss-telugu",   new ShowConfig("bigg-boss-telugu",   "season-10", "Bigg Boss Telugu 10"),
+        "bigg-boss-malayalam",new ShowConfig("bigg-boss-malayalam","season-8",  "Bigg Boss Malayalam 8"),
+        "bigg-boss-kannada",  new ShowConfig("bigg-boss-kannada",  "season-13", "Bigg Boss Kannada 13")
     );
 
-    // Google News search terms per show (URL-encoded in method)
-    private static final Map<String, String> NEWS_QUERIES = Map.of(
-        "bigg-boss-tamil",    "Bigg Boss Tamil 10 nominations week eviction",
-        "bigg-boss-telugu",   "Bigg Boss Telugu 10 nominations week eviction",
-        "bigg-boss-malayalam","Bigg Boss Malayalam season 8 nominations week eviction",
-        "bigg-boss-kannada",  "Bigg Boss Kannada 13 nominations week eviction"
-    );
+    /** Minimum fraction of nominees that must match known DB contestants to auto-publish */
+    private static final double MATCH_THRESHOLD = 0.5;
 
     private final EvictionPollRepository      pollRepository;
     private final EvictionNomineeRepository   nomineeRepository;
@@ -63,13 +53,13 @@ public class NominationSyncService {
     private final NominationSyncLogRepository syncLogRepository;
     private final ContestantRepository        contestantRepository;
     private final SeasonRepository            seasonRepository;
-    private final RestTemplate                restTemplate;
+    private final HousePulseCrawler           crawler;
 
     // ── Scheduled entry point (fallback for local dev) ────────────────────────
 
-    @Scheduled(cron = "0 0 10 * * *", zone = "UTC")   // 3:30 PM IST daily
+    @Scheduled(cron = "0 0 */6 * * *", zone = "UTC")  // every 6 hours
     public void scheduledSync() {
-        log.info("[NominationSync] Scheduled daily sync starting");
+        log.info("[NominationSync] Scheduled 6-hour sync starting");
         runSync(null);
     }
 
@@ -78,7 +68,7 @@ public class NominationSyncService {
     public SyncResult runSync(String showSlug) {
         List<String> slugs = showSlug != null
             ? List.of(showSlug)
-            : List.copyOf(WIKI_PAGES.keySet());
+            : List.copyOf(SHOW_CONFIGS.keySet());
 
         int totalNominees = 0, totalConflicts = 0;
         List<String> errors = new ArrayList<>();
@@ -89,8 +79,9 @@ public class NominationSyncService {
                 ShowSyncResult r = syncShow(slug);
                 totalNominees  += r.nominees();
                 totalConflicts += r.conflicts();
-                finishLog(syncLog, 0, r.nominees(), r.conflicts(), null);
-                log.info("[NominationSync] {} — nominees={} conflicts={}", slug, r.nominees(), r.conflicts());
+                finishLog(syncLog, 1, r.nominees(), r.conflicts(), null);
+                log.info("[NominationSync] {} — nominees={} conflicts={} state={}",
+                    slug, r.nominees(), r.conflicts(), r.state());
             } catch (Exception e) {
                 log.error("[NominationSync] {} — failed: {}", slug, e.getMessage(), e);
                 errors.add(slug + ": " + e.getMessage());
@@ -102,92 +93,186 @@ public class NominationSyncService {
         return new SyncResult(status, totalNominees, totalConflicts, errors);
     }
 
+    // ── Dry-run mode (no DB writes) ───────────────────────────────────────────
+
+    public DryRunResult dryRun(String showSlug) {
+        ShowConfig cfg = SHOW_CONFIGS.get(showSlug);
+        if (cfg == null) return new DryRunResult(showSlug, false, -1, List.of(), "unknown show slug");
+
+        String url = nominationsUrl(cfg);
+        HousePulseCrawler.CrawlResult crawl = crawler.fetchNominations(url);
+        if (!crawl.success()) return new DryRunResult(showSlug, false, -1, List.of(), crawl.errorMessage());
+
+        List<Season> seasons = seasonRepository.findByShowSlugAndStatus(showSlug, "live");
+        if (seasons.isEmpty()) return new DryRunResult(showSlug, false, crawl.weekNumber(), List.of(), "no live season");
+
+        Season season = seasons.get(0);
+        List<Contestant> dbContestants = contestantRepository.findBySeasonIdOrderByNameAsc(season.getId());
+        List<ContestantMatch> matches = matchNominees(crawl.nominees(), dbContestants);
+
+        return new DryRunResult(showSlug, true, crawl.weekNumber(), matches, null);
+    }
+
     // ── Per-show sync ────────────────────────────────────────────────────────
 
     private ShowSyncResult syncShow(String showSlug) {
+        ShowConfig cfg = SHOW_CONFIGS.get(showSlug);
+        if (cfg == null) {
+            log.warn("[NominationSync] {} — no config; skipping", showSlug);
+            return new ShowSyncResult(0, 0, "SKIPPED");
+        }
+
+        // ── Find live season ──────────────────────────────────────────────────
         List<Season> seasons = seasonRepository.findByShowSlugAndStatus(showSlug, "live");
         if (seasons.isEmpty()) {
-            log.warn("[NominationSync] {} — no live season; skipping", showSlug);
-            return new ShowSyncResult(0, 0);
+            log.info("[NominationSync] {} — no live season; skipping", showSlug);
+            return new ShowSyncResult(0, 0, "NO_LIVE_SEASON");
         }
         Season season = seasons.get(0);
 
-        // Determine current week number from season start date
-        int weekNumber = currentWeek(season);
+        // ── Crawl HousePulse ──────────────────────────────────────────────────
+        String url = nominationsUrl(cfg);
+        HousePulseCrawler.CrawlResult crawl = crawler.fetchNominations(url);
 
-        // Already have a poll for this week? Skip if nominees are already confirmed
-        if (pollRepository.existsBySeasonIdAndWeekNumber(season.getId(), weekNumber)) {
-            EvictionPoll existing = pollRepository
-                .findBySeasonIdOrderByWeekNumberDesc(season.getId())
-                .stream().filter(p -> p.getWeekNumber() == weekNumber).findFirst().orElse(null);
-            if (existing != null && existing.getSourceVerified()) {
-                log.info("[NominationSync] {} — week {} already verified; skipping", showSlug, weekNumber);
-                return new ShowSyncResult(0, 0);
+        if (!crawl.success()) {
+            // Source unavailable — update existing poll state, don't wipe nominees
+            markSourceUnavailable(season, url, crawl.errorMessage());
+            return new ShowSyncResult(0, 0, "SOURCE_UNAVAILABLE");
+        }
+
+        int weekNumber = crawl.weekNumber();
+
+        // ── Skip if already verified at this week ─────────────────────────────
+        Optional<EvictionPoll> existing = pollRepository
+            .findBySeasonIdOrderByWeekNumberDesc(season.getId())
+            .stream()
+            .filter(p -> p.getWeekNumber() == weekNumber)
+            .findFirst();
+
+        if (existing.isPresent() && existing.get().getSourceVerified()
+                && "open".equals(existing.get().getStatus())) {
+            log.info("[NominationSync] {} — week {} already verified+open; skipping", showSlug, weekNumber);
+            return new ShowSyncResult(existing.get().getEvictionNominees().size(), 0, "ALREADY_VERIFIED");
+        }
+
+        // ── Match nominees to DB contestants ──────────────────────────────────
+        List<Contestant> dbContestants = contestantRepository.findBySeasonIdOrderByNameAsc(season.getId());
+        List<ContestantMatch> matches = matchNominees(crawl.nominees(), dbContestants);
+
+        List<Contestant> matched   = matches.stream().filter(m -> m.contestant() != null).map(ContestantMatch::contestant).distinct().collect(Collectors.toList());
+        List<String>     unmatched = matches.stream().filter(m -> m.contestant() == null).map(ContestantMatch::sourceName).collect(Collectors.toList());
+
+        double matchRate = crawl.nominees().isEmpty() ? 0
+            : (double) matched.size() / crawl.nominees().size();
+
+        String nominationState;
+        boolean verified = false;
+
+        if (matched.isEmpty()) {
+            nominationState = "NEEDS_VERIFICATION";
+            log.warn("[NominationSync] {} week {} — 0 matches from {} nominees; needs admin review. Unmatched: {}",
+                showSlug, weekNumber, crawl.nominees().size(), crawl.nominees().stream().map(HousePulseCrawler.Nominee::name).collect(Collectors.toList()));
+        } else if (matchRate < MATCH_THRESHOLD) {
+            nominationState = "NEEDS_VERIFICATION";
+            log.warn("[NominationSync] {} week {} — low match rate {}/{} ({}%). Unmatched: {}",
+                showSlug, weekNumber, matched.size(), crawl.nominees().size(),
+                (int)(matchRate * 100), unmatched);
+        } else {
+            nominationState = "NOMINATIONS_PUBLISHED";
+            verified = true;
+            if (!unmatched.isEmpty()) {
+                log.warn("[NominationSync] {} week {} — {} nominees unmatched: {}",
+                    showSlug, weekNumber, unmatched.size(), unmatched);
             }
         }
 
-        // Load known contestant slugs for this season
-        List<Contestant> dbContestants = contestantRepository.findBySeasonIdOrderByNameAsc(season.getId());
-        Map<String, Contestant> bySlug = dbContestants.stream()
-            .collect(Collectors.toMap(Contestant::getSlug, c -> c));
-        Map<String, Contestant> byNameLower = dbContestants.stream()
-            .collect(Collectors.toMap(c -> c.getName().toLowerCase(), c -> c, (a, b) -> a));
+        // ── Upsert poll and nominees ──────────────────────────────────────────
+        upsertPoll(season, weekNumber, matched, nominationState, verified,
+            url, crawl, showSlug, unmatched, dbContestants);
 
-        // ── Source 1: Wikipedia nominations table ─────────────────────────────
-        List<String> wikiNames = fetchWikipediaNominees(WIKI_PAGES.get(showSlug), weekNumber);
-
-        // ── Source 2: Google News RSS → article scraping ──────────────────────
-        List<String> newsNames = fetchNewsNominees(NEWS_QUERIES.get(showSlug), weekNumber, byNameLower);
-
-        // ── Cross-check ───────────────────────────────────────────────────────
-        Set<String> wikiSlugs = wikiNames.stream().map(this::toSlug).collect(Collectors.toSet());
-        Set<String> newsSlugs = newsNames.stream().map(this::toSlug).collect(Collectors.toSet());
-
-        Set<String> agreed    = new HashSet<>(wikiSlugs); agreed.retainAll(newsSlugs);
-        Set<String> wikiOnly  = new HashSet<>(wikiSlugs); wikiOnly.removeAll(newsSlugs);
-        Set<String> newsOnly  = new HashSet<>(newsSlugs); newsOnly.removeAll(wikiSlugs);
-
-        boolean twoSourcesAgree = !agreed.isEmpty() && wikiOnly.isEmpty() && newsOnly.isEmpty();
-        boolean hasConflict = !wikiOnly.isEmpty() || !newsOnly.isEmpty();
-        int conflicts = hasConflict ? 1 : 0;
-
-        // Determine nominees to record
-        Set<String> allCandidateSlugs = new HashSet<>();
-        allCandidateSlugs.addAll(wikiSlugs);
-        allCandidateSlugs.addAll(newsSlugs);
-
-        if (allCandidateSlugs.isEmpty()) {
-            log.warn("[NominationSync] {} — week {} — 0 nominees found in any source", showSlug, weekNumber);
-            return new ShowSyncResult(0, 0);
-        }
-
-        // Resolve slugs to Contestants
-        List<Contestant> nominees = allCandidateSlugs.stream()
-            .map(bySlug::get)
-            .filter(Objects::nonNull)
-            .distinct()
-            .collect(Collectors.toList());
-
-        if (nominees.isEmpty()) {
-            log.warn("[NominationSync] {} — week {} — candidates found but none matched DB slugs: {}", showSlug, weekNumber, allCandidateSlugs);
-            return new ShowSyncResult(0, conflicts);
-        }
-
-        // ── Upsert poll ───────────────────────────────────────────────────────
-        upsertPoll(season, weekNumber, nominees, agreed, twoSourcesAgree, hasConflict,
-            showSlug, wikiNames, newsNames);
-
-        return new ShowSyncResult(nominees.size(), conflicts);
+        return new ShowSyncResult(matched.size(), unmatched.size(), nominationState);
     }
+
+    // ── Contestant name matching ──────────────────────────────────────────────
+
+    /**
+     * Attempts to match each scraped nominee to a DB contestant.
+     * Strategy (in order of preference):
+     * 1. HousePulse slug directly matches DB slug
+     * 2. Normalized name exact match
+     * 3. Normalized name prefix match (handles "Akshitha Ashok" vs "Akshitha")
+     * 4. Any single token in the name matches a unique DB slug token
+     */
+    List<ContestantMatch> matchNominees(List<HousePulseCrawler.Nominee> nominees,
+                                        List<Contestant> dbContestants) {
+        Map<String, Contestant> bySlug = dbContestants.stream()
+            .collect(Collectors.toMap(c -> c.getSlug().toLowerCase(), c -> c, (a, b) -> a));
+        Map<String, Contestant> byNormName = dbContestants.stream()
+            .collect(Collectors.toMap(c -> normalize(c.getName()), c -> c, (a, b) -> a));
+
+        List<ContestantMatch> results = new ArrayList<>();
+        for (HousePulseCrawler.Nominee n : nominees) {
+            Contestant match = resolveContestant(n, bySlug, byNormName);
+            results.add(new ContestantMatch(n.name(), n.housePulseSlug(), n.profileImageUrl(), match));
+        }
+        return results;
+    }
+
+    private Contestant resolveContestant(HousePulseCrawler.Nominee n,
+                                          Map<String, Contestant> bySlug,
+                                          Map<String, Contestant> byNormName) {
+        // 1. Direct slug match (most reliable)
+        Contestant c = bySlug.get(n.housePulseSlug().toLowerCase());
+        if (c != null) return c;
+
+        // 2. Normalized full name
+        c = byNormName.get(normalize(n.name()));
+        if (c != null) return c;
+
+        // 3. Prefix: "Akshitha Ashok" from source vs "Akshitha" in DB, or vice versa
+        String normSource = normalize(n.name());
+        for (Map.Entry<String, Contestant> e : byNormName.entrySet()) {
+            String normDb = e.getKey();
+            if (normSource.startsWith(normDb) || normDb.startsWith(normSource)) {
+                return e.getValue();
+            }
+        }
+
+        // 4. Token match — any non-trivial word in source slug matches a unique DB slug segment
+        String[] sourceTokens = n.housePulseSlug().split("-");
+        for (String token : sourceTokens) {
+            if (token.length() < 4) continue;
+            for (Map.Entry<String, Contestant> e : bySlug.entrySet()) {
+                if (e.getKey().contains(token)) {
+                    return e.getValue();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private String normalize(String s) {
+        return s.toLowerCase()
+            .replaceAll("[^a-z0-9 ]", "")
+            .replaceAll("\\s+", " ")
+            .trim();
+    }
+
+    // ── DB operations ─────────────────────────────────────────────────────────
 
     @Transactional
     protected void upsertPoll(Season season, int weekNumber, List<Contestant> nominees,
-                               Set<String> agreedSlugs, boolean twoSourcesAgree, boolean hasConflict,
-                               String showSlug, List<String> wikiNames, List<String> newsNames) {
+                               String nominationState, boolean verified,
+                               String sourceUrl, HousePulseCrawler.CrawlResult crawl,
+                               String showSlug, List<String> unmatched,
+                               List<Contestant> dbContestants) {
 
         EvictionPoll poll = pollRepository
             .findBySeasonIdOrderByWeekNumberDesc(season.getId())
-            .stream().filter(p -> p.getWeekNumber() == weekNumber).findFirst()
+            .stream()
+            .filter(p -> p.getWeekNumber() == weekNumber)
+            .findFirst()
             .orElseGet(() -> {
                 EvictionPoll p = EvictionPoll.builder()
                     .season(season)
@@ -200,201 +285,65 @@ public class NominationSyncService {
                 return pollRepository.save(p);
             });
 
-        // Record sources
-        sourceRepository.save(NominationSource.builder()
-            .poll(poll)
-            .publication("Wikipedia")
-            .url("https://en.wikipedia.org/wiki/" + WIKI_PAGES.get(showSlug))
-            .status(wikiNames.isEmpty() ? "failed" : "confirmed")
-            .rawNames(wikiNames.toString())
-            .build());
-
-        if (!newsNames.isEmpty()) {
-            sourceRepository.save(NominationSource.builder()
-                .poll(poll)
-                .publication("Google News")
-                .url(GOOGLE_NEWS_RSS + encode(NEWS_QUERIES.get(showSlug)))
-                .status(newsNames.isEmpty() ? "failed" : (hasConflict ? "conflicting" : "confirmed"))
-                .rawNames(newsNames.toString())
-                .build());
-        }
-
-        // Set nominees (replace list if poll is still in draft)
-        if ("draft".equals(poll.getStatus())) {
+        // Only update nominees if the poll is still in draft (not manually opened/managed)
+        if ("draft".equals(poll.getStatus()) || "open".equals(poll.getStatus())) {
             nomineeRepository.deleteByPollId(poll.getId());
             for (Contestant c : nominees) {
-                boolean confirmed = agreedSlugs.contains(c.getSlug()) || twoSourcesAgree;
                 nomineeRepository.save(EvictionNominee.builder()
                     .poll(poll)
                     .contestant(c)
-                    .confirmed(confirmed)
+                    .confirmed(verified)
                     .addedBy("auto")
                     .build());
             }
-            if (twoSourcesAgree && !hasConflict) {
-                poll.setSourceVerified(true);
-                log.info("[NominationSync] {} week {} — auto-verified ({} nominees, 2 sources agree)", showSlug, weekNumber, nominees.size());
-            } else if (hasConflict) {
-                poll.setAdminNotes("Sources disagree — manual review required.");
-                log.warn("[NominationSync] {} week {} — CONFLICT: wiki={} news={}", showSlug, weekNumber, wikiNames, newsNames);
-            } else {
-                log.info("[NominationSync] {} week {} — single source only; admin review needed", showSlug, weekNumber);
+
+            // Auto-open when verified
+            if (verified && "draft".equals(poll.getStatus())) {
+                poll.setStatus("open");
             }
+
+            poll.setSourceVerified(verified);
+            poll.setNominationState(nominationState);
+
+            if (!unmatched.isEmpty()) {
+                poll.setAdminNotes("Unmatched from source: " + unmatched);
+            }
+
             poll.setUpdatedAt(LocalDateTime.now());
             pollRepository.save(poll);
         }
+
+        // Always record the source run
+        List<String> nomineeNames = crawl.nominees().stream()
+            .map(HousePulseCrawler.Nominee::name)
+            .collect(Collectors.toList());
+
+        sourceRepository.save(NominationSource.builder()
+            .poll(poll)
+            .publication("HousePulse")
+            .url(sourceUrl)
+            .status(verified ? "confirmed" : (nominees.isEmpty() ? "failed" : "conflicting"))
+            .rawNames(nomineeNames.toString())
+            .notes(crawl.sourceUpdatedAt() != null
+                ? "Source updated: " + crawl.sourceUpdatedAt()
+                : null)
+            .build());
     }
 
-    // ── Wikipedia fetch ───────────────────────────────────────────────────────
-
-    private List<String> fetchWikipediaNominees(String wikiPage, int weekNumber) {
-        try {
-            String url = MEDIAWIKI_API + "?action=query&prop=revisions&rvprop=content&rvslots=main"
-                + "&format=json&titles=" + wikiPage;
-            WikipediaContestantSyncService.WikiApiResponse resp =
-                restTemplate.getForObject(url, WikipediaContestantSyncService.WikiApiResponse.class);
-            if (resp == null || resp.query() == null) return List.of();
-            Map<String, Object> pages = resp.query().pages();
-            if (pages == null || pages.isEmpty()) return List.of();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> page = (Map<String, Object>) pages.entrySet().iterator().next().getValue();
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> revisions = (List<Map<String, Object>>) page.get("revisions");
-            if (revisions == null || revisions.isEmpty()) return List.of();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> slots = (Map<String, Object>) revisions.get(0).get("slots");
-            if (slots == null) return List.of();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> mainSlot = (Map<String, Object>) slots.get("main");
-            String wikitext = mainSlot != null ? (String) mainSlot.get("*") : null;
-            if (wikitext == null || wikitext.isBlank()) return List.of();
-            return parseNominationsFromWikitext(wikitext, weekNumber);
-        } catch (Exception e) {
-            log.warn("[NominationSync] Wikipedia fetch failed for {}: {}", wikiPage, e.getMessage());
-            return List.of();
-        }
-    }
-
-    /**
-     * Parses the Nominations section of a Bigg Boss Wikipedia article.
-     * Looks for a table row matching the current week number and extracts contestant names.
-     */
-    private List<String> parseNominationsFromWikitext(String wikitext, int weekNumber) {
-        List<String> names = new ArrayList<>();
-
-        // Find the "Nominations" section
-        int nomIdx = wikitext.toLowerCase().indexOf("== nominations ==");
-        if (nomIdx < 0) nomIdx = wikitext.toLowerCase().indexOf("===nominations===");
-        if (nomIdx < 0) nomIdx = wikitext.toLowerCase().indexOf("nomination");
-        if (nomIdx < 0) return names;
-
-        // Look for rows mentioning the current week
-        String nominationSection = wikitext.substring(nomIdx, Math.min(nomIdx + 8000, wikitext.length()));
-        String weekPattern = "week " + weekNumber + "|week\\s*" + weekNumber + "\\b|week-" + weekNumber;
-        Pattern weekPat = Pattern.compile(weekPattern, Pattern.CASE_INSENSITIVE);
-
-        // After finding week, extract wiki-linked names from the surrounding 500 chars
-        Matcher wm = weekPat.matcher(nominationSection);
-        if (!wm.find()) return names;
-
-        String context = nominationSection.substring(wm.start(), Math.min(wm.start() + 600, nominationSection.length()));
-        Pattern linkPat = Pattern.compile("\\[\\[([^|\\]]+?)(?:\\|[^\\]]*)?\\]\\]");
-        Matcher lm = linkPat.matcher(context);
-        while (lm.find()) {
-            String name = lm.group(1).trim();
-            if (name.length() >= 3 && name.length() <= 60
-                && !name.contains(":")
-                && !name.matches(".*\\d{4}.*")) {
-                names.add(name);
-            }
-        }
-        return names;
-    }
-
-    // ── Google News + article scraping ────────────────────────────────────────
-
-    private List<String> fetchNewsNominees(String query, int weekNumber,
-                                           Map<String, Contestant> byNameLower) {
-        try {
-            String rssUrl = GOOGLE_NEWS_RSS + encode(query + " week " + weekNumber);
-            String rssXml = restTemplate.getForObject(rssUrl, String.class);
-            if (rssXml == null || rssXml.isBlank()) return List.of();
-
-            // Extract up to 3 article links from RSS
-            List<String> articleUrls = extractArticleUrls(rssXml, 3);
-            if (articleUrls.isEmpty()) return List.of();
-
-            Set<String> found = new LinkedHashSet<>();
-            for (String articleUrl : articleUrls) {
-                List<String> fromArticle = scrapeNomineesFromArticle(articleUrl, byNameLower);
-                found.addAll(fromArticle);
-            }
-            return List.copyOf(found);
-        } catch (Exception e) {
-            log.warn("[NominationSync] News fetch failed for query '{}': {}", query, e.getMessage());
-            return List.of();
-        }
-    }
-
-    private List<String> extractArticleUrls(String rssXml, int max) {
-        List<String> urls = new ArrayList<>();
-        Pattern linkPat = Pattern.compile("<link>(?!<)(https?://[^<]+)</link>", Pattern.CASE_INSENSITIVE);
-        Matcher m = linkPat.matcher(rssXml);
-        while (m.find() && urls.size() < max) {
-            String url = m.group(1).trim();
-            // Skip Google News redirect links; accept direct news site URLs
-            if (!url.contains("news.google.com")) urls.add(url);
-        }
-        return urls;
-    }
-
-    private List<String> scrapeNomineesFromArticle(String articleUrl, Map<String, Contestant> byNameLower) {
-        try {
-            Document doc = Jsoup.connect(articleUrl)
-                .userAgent("Mozilla/5.0 (compatible; FanMeterBot/1.0)")
-                .timeout(8000)
-                .get();
-
-            String bodyText = doc.body().text().toLowerCase();
-            List<String> matched = new ArrayList<>();
-
-            // Check each known contestant name against article text
-            for (Map.Entry<String, Contestant> entry : byNameLower.entrySet()) {
-                String nameLower = entry.getKey();
-                Contestant c = entry.getValue();
-                // Only look for active contestants as nominees
-                if (!"active".equals(c.getStatus())) continue;
-                if (bodyText.contains(nameLower) &&
-                    (bodyText.contains("nominat") || bodyText.contains("evict") || bodyText.contains("safe"))) {
-                    matched.add(c.getName());
-                }
-            }
-            return matched;
-        } catch (Exception e) {
-            log.debug("[NominationSync] Article scrape failed for {}: {}", articleUrl, e.getMessage());
-            return List.of();
-        }
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private int currentWeek(Season season) {
-        if (season.getStartDate() == null) return 1;
-        long days = ChronoUnit.DAYS.between(season.getStartDate(), LocalDate.now());
-        return Math.max(1, (int) (days / 7) + 1);
-    }
-
-    private String toSlug(String name) {
-        return name.toLowerCase()
-            .replaceAll("[^a-z0-9\\s-]", "")
-            .replaceAll("\\s+", "-")
-            .replaceAll("-+", "-")
-            .replaceAll("^-|-$", "");
-    }
-
-    private String encode(String s) {
-        try { return java.net.URLEncoder.encode(s, "UTF-8"); }
-        catch (Exception e) { return s.replace(" ", "+"); }
+    @Transactional
+    protected void markSourceUnavailable(Season season, String sourceUrl, String error) {
+        // Find any current open/draft poll and update its state
+        pollRepository.findTopBySeasonIdAndStatusOrderByWeekNumberDesc(season.getId(), "open").ifPresent(p -> {
+            p.setNominationState("SOURCE_UNAVAILABLE");
+            p.setUpdatedAt(LocalDateTime.now());
+            pollRepository.save(p);
+        });
+        pollRepository.findBySeasonIdOrderByWeekNumberDesc(season.getId())
+            .stream().filter(p -> "draft".equals(p.getStatus())).findFirst().ifPresent(p -> {
+                p.setNominationState("SOURCE_UNAVAILABLE");
+                p.setUpdatedAt(LocalDateTime.now());
+                pollRepository.save(p);
+            });
     }
 
     // ── Log helpers ───────────────────────────────────────────────────────────
@@ -429,11 +378,30 @@ public class NominationSyncService {
             .collect(Collectors.toList()));
     }
 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private String nominationsUrl(ShowConfig cfg) {
+        return HP_URL_TEMPLATE
+            .replace("{slug}",   cfg.housePulseSlug())
+            .replace("{season}", cfg.seasonSegment());
+    }
+
     // ── Records ───────────────────────────────────────────────────────────────
 
-    public record ShowSyncResult(int nominees, int conflicts) {}
+    public record ShowConfig(String housePulseSlug, String seasonSegment, String displayName) {}
+
+    public record ShowSyncResult(int nominees, int conflicts, String state) {}
+
+    public record ContestantMatch(String sourceName, String sourceSlug,
+                                   String profileImageUrl, Contestant contestant) {}
+
+    public record DryRunResult(String showSlug, boolean success, int weekNumber,
+                                List<ContestantMatch> matches, String error) {}
+
     public record SyncResult(String status, int totalNominees, int totalConflicts, List<String> errors) {}
+
     public record SyncLogEntry(Long id, String showSlug, LocalDateTime startedAt, LocalDateTime finishedAt,
                                 String status, int nomineesFound, int conflictsFound) {}
+
     public record SyncStatusDto(List<SyncLogEntry> logs) {}
 }
