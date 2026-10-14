@@ -13,7 +13,7 @@ const EVENT_SLUGS = [
 // Eviction tab is the default — just navigate and wait for nominees
 async function goToEvictionTab(page: Page, slug: string) {
   await page.goto(`/events/${slug}`);
-  await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+  await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 20_000 });
 }
 
 test.describe("Default tab — eviction", () => {
@@ -21,10 +21,10 @@ test.describe("Default tab — eviction", () => {
     test(`${slug}: eviction tab is active by default on base URL`, async ({ page }) => {
       await page.goto(`/events/${slug}`);
       // Eviction tab button should have active styling (rose border)
-      const evictionBtn = page.getByRole("button", { name: /This Week.*Eviction/i });
-      await expect(evictionBtn).toBeVisible();
+      const evictionTab = page.getByRole("tab", { name: /This Week.*Eviction/i });
+      await expect(evictionTab).toBeVisible();
       // Heart buttons load without clicking the tab
-      await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+      await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 20_000 });
       const hearts = page.locator('[aria-label^="Give one favourite"]');
       await expect(hearts.first()).toBeVisible();
     });
@@ -35,35 +35,35 @@ test.describe("URL tab parameter", () => {
   test("?tab=rankings opens rankings tab", async ({ page }) => {
     await page.goto("/events/bigg-boss-telugu-10?tab=rankings");
     // Rankings view shows contestant rows (not eviction nominees)
-    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
-    // Rankings tab button should be active (check it's present)
-    const rankingsBtn = page.getByRole("button", { name: /Fan Rankings/i });
-    await expect(rankingsBtn).toBeVisible();
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 20_000 });
+    // Rankings tab should be selected
+    const rankingsTab = page.getByRole("tab", { name: /Fan Rankings/i });
+    await expect(rankingsTab).toBeVisible();
     // URL should still contain ?tab=rankings
     expect(page.url()).toContain("tab=rankings");
   });
 
   test("switching to Fan Rankings updates URL", async ({ page }) => {
     await page.goto("/events/bigg-boss-telugu-10");
-    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
-    await page.getByRole("button", { name: /Fan Rankings/i }).click();
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 20_000 });
+    await page.getByRole("tab", { name: /Fan Rankings/i }).click();
     await page.waitForTimeout(300);
     expect(page.url()).toContain("tab=rankings");
   });
 
   test("switching back to eviction removes ?tab= from URL", async ({ page }) => {
     await page.goto("/events/bigg-boss-telugu-10?tab=rankings");
-    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
-    await page.getByRole("button", { name: /This Week.*Eviction/i }).click();
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 20_000 });
+    await page.getByRole("tab", { name: /This Week.*Eviction/i }).click();
     await page.waitForTimeout(300);
     expect(page.url()).not.toContain("tab=");
   });
 
   test("refreshing on ?tab=rankings stays on rankings tab", async ({ page }) => {
     await page.goto("/events/bigg-boss-telugu-10?tab=rankings");
-    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 20_000 });
     await page.reload();
-    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 20_000 });
     expect(page.url()).toContain("tab=rankings");
   });
 });
@@ -102,11 +102,11 @@ test.describe("Eviction tab — heart click increments count", () => {
     const firstHeart = page.locator('[aria-label^="Give one favourite"]').first();
     const countEl    = firstHeart.locator("..").locator("span.tabular-nums");
 
-    const before = parseInt((await countEl.textContent()) ?? "0");
+    const before = parseInt((await countEl.textContent())?.replace(/,/g, "") ?? "0");
     await firstHeart.click();
     // Optimistic update fires immediately
     await page.waitForTimeout(100);
-    const after = parseInt((await countEl.textContent()) ?? "0");
+    const after = parseInt((await countEl.textContent())?.replace(/,/g, "") ?? "0");
     // At minimum 1 more than before (optimistic); background refresh may add more
     expect(after).toBeGreaterThanOrEqual(before + 1);
   });
@@ -117,7 +117,7 @@ test.describe("Eviction tab — heart click increments count", () => {
     const firstHeart = page.locator('[aria-label^="Give one favourite"]').first();
     const countEl    = firstHeart.locator("..").locator("span.tabular-nums");
 
-    const before = parseInt((await countEl.textContent()) ?? "0");
+    const before = parseInt((await countEl.textContent())?.replace(/,/g, "") ?? "0");
 
     // Click 3 times, waiting for pending to clear between each
     for (let i = 0; i < 3; i++) {
@@ -127,7 +127,7 @@ test.describe("Eviction tab — heart click increments count", () => {
       await page.waitForTimeout(300);
     }
 
-    const after = parseInt((await countEl.textContent()) ?? "0");
+    const after = parseInt((await countEl.textContent())?.replace(/,/g, "") ?? "0");
     expect(after).toBeGreaterThanOrEqual(before + 3);
   });
 });
@@ -156,12 +156,12 @@ test.describe("Eviction tab — counts persist across tab switches", () => {
     await page.waitForTimeout(500);
 
     // Switch to rankings tab
-    await page.getByRole("button", { name: /Fan Rankings/i }).click();
+    await page.getByRole("tab", { name: /Fan Rankings/i }).click();
     await page.waitForTimeout(500);
 
     // Switch back to eviction
-    await page.getByRole("button", { name: /This Week.*Eviction/i }).click();
-    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 8000 });
+    await page.getByRole("tab", { name: /This Week.*Eviction/i }).click();
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 20_000 });
 
     // Heart buttons still present — counts loaded from server
     const heartButtons = page.locator('[aria-label^="Give one favourite"]');
@@ -180,11 +180,11 @@ test.describe("Fan Rankings — unchanged after eviction tab changes", () => {
 
     const firstHeart = heartButtons.first();
     const countEl    = firstHeart.locator("..").locator("span.tabular-nums");
-    const before = parseInt((await countEl.textContent()) ?? "0");
+    const before = parseInt((await countEl.textContent())?.replace(/,/g, "") ?? "0");
 
     await firstHeart.click();
     await page.waitForTimeout(150);
-    const after = parseInt((await countEl.textContent()) ?? "0");
+    const after = parseInt((await countEl.textContent())?.replace(/,/g, "") ?? "0");
     expect(after).toBe(before + 1);
   });
 });

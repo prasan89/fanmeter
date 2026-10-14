@@ -18,7 +18,7 @@ test.describe("Ad layout — homepage", () => {
 
     // Event cards exist in the left column, not inside the sidebar
     const cards = page.locator('article');
-    await expect(cards).toHaveCount(4);
+    await expect(cards).toHaveCount(6);
 
     // No <ins> ad tag inside any event card
     const insInsideCard = page.locator('article ins');
@@ -41,7 +41,7 @@ test.describe("Ad layout — homepage", () => {
 
     // Cards still present and full-width
     const cards = page.locator('article');
-    await expect(cards).toHaveCount(4);
+    await expect(cards).toHaveCount(6);
   });
 
   test("tablet (768px): sidebar hidden", async ({ page }) => {

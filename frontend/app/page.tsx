@@ -6,14 +6,33 @@ import { getShowSeasons, getActiveRound } from "@/lib/api";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
 import { AdSidebar } from "@/components/ads/AdSidebar";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fanmeter.in";
+
 export const metadata: Metadata = {
-  title: "FanMeter — Bigg Boss Fan Voting",
+  title: "Bigg Boss Fan Rankings, Eviction Nominees & Community Polls",
   description:
-    "Vote for your favourite Bigg Boss contestant. Independent community polls for Tamil 10, Telugu 10, Malayalam 8, Kannada 13, Hindi 20, and Bangla 3.",
+    "Live fan rankings and weekly eviction nominees for Bigg Boss Tamil 10, Telugu 10, Malayalam 8, Kannada 13, Hindi 20, and Bangla 3. Community polls — not official broadcaster voting.",
+  alternates: { canonical: SITE_URL },
   openGraph: {
-    title: "FanMeter — Bigg Boss Fan Voting",
-    description: "Independent community voting for Bigg Boss Tamil 10, Telugu 10, Malayalam 8, Kannada 13, Hindi 20, and Bangla 3.",
+    title: "FanMeter — Bigg Boss Fan Rankings & Eviction Polls",
+    description:
+      "Live fan rankings and eviction nominees for all six Bigg Boss seasons. Independent community platform.",
     type: "website",
+    url: SITE_URL,
+    images: [
+      {
+        url: `${SITE_URL}/og-default.jpg`,
+        width: 1200,
+        height: 630,
+        alt: "FanMeter — Bigg Boss Fan Community",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FanMeter — Bigg Boss Fan Rankings & Eviction Polls",
+    description:
+      "Live fan rankings for Bigg Boss Tamil 10, Telugu 10, Malayalam 8, Kannada 13, Hindi 20, Bangla 3.",
   },
 };
 

@@ -21,23 +21,31 @@ interface ShowPageProps {
 
 export async function generateMetadata({ params }: ShowPageProps) {
   const { slug } = await params;
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://fanmeter.in"}/shows/${slug}`;
   try {
     const show = await getShow(slug);
     return {
-      title: `${show.name} — FanMeter`,
+      title: show.name,
       description:
         show.description ??
         `Follow ${show.name} on FanMeter. Vote, explore rankings, and join fan polls.`,
+      alternates: { canonical: canonicalUrl },
       openGraph: {
-        title: `${show.name} — FanMeter`,
+        title: `${show.name} | FanMeter`,
         description:
           show.description ??
           `Follow ${show.name} on FanMeter. Vote, explore rankings, and join fan polls.`,
-        images: show.imageUrl ? [show.imageUrl] : [],
+        url: canonicalUrl,
+        images: show.imageUrl ? [{ url: show.imageUrl, alt: show.name }] : [],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${show.name} | FanMeter`,
+        description: show.description ?? `Follow ${show.name} on FanMeter.`,
       },
     };
   } catch {
-    return { title: "Show — FanMeter" };
+    return { title: "Show | FanMeter", alternates: { canonical: canonicalUrl } };
   }
 }
 

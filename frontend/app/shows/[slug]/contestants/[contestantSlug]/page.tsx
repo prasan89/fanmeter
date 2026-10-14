@@ -13,20 +13,34 @@ interface ContestantPageProps {
 }
 
 export async function generateMetadata({ params }: ContestantPageProps) {
-  const { contestantSlug } = await params;
+  const { slug, contestantSlug } = await params;
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://fanmeter.in"}/shows/${slug}/contestants/${contestantSlug}`;
   try {
     const contestant = await getContestant(contestantSlug);
     return {
-      title: `${contestant.name} — FanMeter`,
-      description: contestant.bio ?? `${contestant.name} — Bigg Boss contestant on FanMeter. Vote, check rankings, and follow community polls.`,
+      title: contestant.name,
+      description:
+        contestant.bio ??
+        `${contestant.name} — Bigg Boss contestant on FanMeter. Vote, check fan rankings, and follow community polls.`,
+      alternates: { canonical: canonicalUrl },
       openGraph: {
-        title: `${contestant.name} — FanMeter`,
+        title: `${contestant.name} | FanMeter`,
+        description:
+          contestant.bio ??
+          `${contestant.name} — Bigg Boss contestant on FanMeter.`,
+        url: canonicalUrl,
+        images: contestant.profileImage
+          ? [{ url: contestant.profileImage, alt: contestant.name }]
+          : [],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${contestant.name} | FanMeter`,
         description: contestant.bio ?? `${contestant.name} — Bigg Boss contestant on FanMeter.`,
-        images: contestant.profileImage ? [contestant.profileImage] : [],
       },
     };
   } catch {
-    return { title: "Contestant — FanMeter" };
+    return { title: "Contestant | FanMeter", alternates: { canonical: canonicalUrl } };
   }
 }
 

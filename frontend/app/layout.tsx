@@ -5,6 +5,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { WebSiteSchema, OrganizationSchema } from "@/components/seo/JsonLd";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,14 +13,32 @@ const inter = Inter({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fanmeter.in";
+
 export const metadata: Metadata = {
-  title: "FanMeter — Bigg Boss Fan Community",
-  description: "Vote for your favourite Bigg Boss Tamil 10 and Telugu 10 contestants. Community polls, live rankings, and fan battles. Not an official broadcaster vote.",
-  keywords: ["bigg boss", "bigg boss tamil 10", "bigg boss telugu 10", "fan voting", "reality tv", "community poll"],
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "FanMeter — Bigg Boss Fan Community",
+    template: "%s | FanMeter",
+  },
+  description:
+    "Independent community fan polls for Bigg Boss Tamil 10, Telugu 10, Malayalam 8, Kannada 13, Hindi 20 and Bangla 3. Live contestant rankings, eviction nominees, and fan favourites. Not an official broadcaster vote.",
   openGraph: {
     title: "FanMeter — Bigg Boss Fan Community",
-    description: "Vote for your favourite Bigg Boss contestant. Live community rankings and fan polls.",
+    description:
+      "Independent fan polls for Bigg Boss Tamil 10, Telugu 10, Malayalam 8, Kannada 13, Hindi 20 and Bangla 3. Live rankings and eviction nominees.",
     type: "website",
+    url: SITE_URL,
+    siteName: "FanMeter",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FanMeter — Bigg Boss Fan Community",
+    description:
+      "Independent fan polls for Bigg Boss Tamil, Telugu, Malayalam, Kannada, Hindi, and Bangla. Live rankings.",
+  },
+  alternates: {
+    canonical: SITE_URL,
   },
 };
 
@@ -43,6 +62,8 @@ export default function RootLayout({
           />
         )}
         <Header />
+        <WebSiteSchema />
+        <OrganizationSchema />
         <main className="pb-16 md:pb-0">{children}</main>
         <Footer />
         <MobileNav />

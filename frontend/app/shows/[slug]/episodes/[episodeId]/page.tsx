@@ -17,16 +17,18 @@ export async function generateMetadata({ params }: EpisodePageProps) {
   try {
     const episode = await getEpisode(Number(episodeId));
     return {
-      title: `${episode.title} — FanMeter`,
+      title: episode.title,
       description: episode.description ?? `Watch episode ${episode.episodeNumber}: ${episode.title} on FanMeter.`,
+      // Episode pages are thin until we have episode recaps; keep unindexed for now
+      robots: { index: false, follow: true },
       openGraph: {
-        title: `${episode.title} — FanMeter`,
+        title: `${episode.title} | FanMeter`,
         description: episode.description ?? `Watch episode ${episode.episodeNumber}: ${episode.title} on FanMeter.`,
-        images: episode.thumbnail ? [episode.thumbnail] : [],
+        images: episode.thumbnail ? [{ url: episode.thumbnail, alt: episode.title }] : [],
       },
     };
   } catch {
-    return { title: `Episode — FanMeter` };
+    return { title: "Episode | FanMeter", robots: { index: false, follow: true } };
   }
 }
 
