@@ -146,7 +146,32 @@ export default async function HomePage() {
   const statuses = [tamilStatus, teluguStatus, malayalamStatus, kannadaStatus, hindiStatus, banglaStatus];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col relative overflow-x-hidden">
+      {/* Soft abstract background shapes — decorative only */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+        style={{
+          background: [
+            /* Base: very faint violet wash across the whole page */
+            "radial-gradient(ellipse 120% 60% at 50% -10%, rgba(167,139,250,0.13) 0%, transparent 70%)",
+            /* Top-left: large soft lavender blob */
+            "radial-gradient(ellipse 80% 70% at -15% 10%, rgba(196,181,253,0.18) 0%, transparent 65%)",
+            /* Top-right: blush pink */
+            "radial-gradient(ellipse 60% 55% at 110% 5%, rgba(251,207,232,0.22) 0%, transparent 60%)",
+            /* Mid-left: pale sky blue */
+            "radial-gradient(ellipse 55% 50% at -10% 55%, rgba(186,230,253,0.15) 0%, transparent 60%)",
+            /* Mid-right: soft violet */
+            "radial-gradient(ellipse 50% 45% at 108% 50%, rgba(221,214,254,0.18) 0%, transparent 60%)",
+            /* Bottom-left: mint accent */
+            "radial-gradient(ellipse 60% 40% at -5% 95%, rgba(167,243,208,0.10) 0%, transparent 55%)",
+            /* Bottom-right: blush */
+            "radial-gradient(ellipse 55% 40% at 105% 90%, rgba(252,231,243,0.18) 0%, transparent 55%)",
+            /* White center — keeps the card grid area clean */
+            "radial-gradient(ellipse 70% 60% at 50% 55%, rgba(255,255,255,0.85) 0%, transparent 80%)",
+          ].join(", "),
+        }}
+      />
       <div className="flex-1 py-8">
         <TwoColumnLayout sidebar={<AdSidebar />}>
           {/* Compact event-discovery intro */}

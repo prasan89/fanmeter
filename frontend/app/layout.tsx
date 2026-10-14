@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-screen bg-slate-50">
+      <body className="min-h-screen bg-white">
         {/* AdSense script — loaded once, only when publisher ID is configured */}
         {ADSENSE_CLIENT && (
           <Script
