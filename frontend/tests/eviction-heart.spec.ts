@@ -10,19 +10,68 @@ const EVENT_SLUGS = [
   "bigg-boss-kannada-13",
 ] as const;
 
+// Eviction tab is the default — just navigate and wait for nominees
 async function goToEvictionTab(page: Page, slug: string) {
   await page.goto(`/events/${slug}`);
-  // Click the eviction tab
-  await page.getByRole("button", { name: /This Week.*Eviction/i }).click();
-  // Wait for nominees to load (heart buttons appear)
   await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
 }
+
+test.describe("Default tab — eviction", () => {
+  for (const slug of EVENT_SLUGS) {
+    test(`${slug}: eviction tab is active by default on base URL`, async ({ page }) => {
+      await page.goto(`/events/${slug}`);
+      // Eviction tab button should have active styling (rose border)
+      const evictionBtn = page.getByRole("button", { name: /This Week.*Eviction/i });
+      await expect(evictionBtn).toBeVisible();
+      // Heart buttons load without clicking the tab
+      await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+      const hearts = page.locator('[aria-label^="Give one favourite"]');
+      await expect(hearts.first()).toBeVisible();
+    });
+  }
+});
+
+test.describe("URL tab parameter", () => {
+  test("?tab=rankings opens rankings tab", async ({ page }) => {
+    await page.goto("/events/bigg-boss-telugu-10?tab=rankings");
+    // Rankings view shows contestant rows (not eviction nominees)
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+    // Rankings tab button should be active (check it's present)
+    const rankingsBtn = page.getByRole("button", { name: /Fan Rankings/i });
+    await expect(rankingsBtn).toBeVisible();
+    // URL should still contain ?tab=rankings
+    expect(page.url()).toContain("tab=rankings");
+  });
+
+  test("switching to Fan Rankings updates URL", async ({ page }) => {
+    await page.goto("/events/bigg-boss-telugu-10");
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+    await page.getByRole("button", { name: /Fan Rankings/i }).click();
+    await page.waitForTimeout(300);
+    expect(page.url()).toContain("tab=rankings");
+  });
+
+  test("switching back to eviction removes ?tab= from URL", async ({ page }) => {
+    await page.goto("/events/bigg-boss-telugu-10?tab=rankings");
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+    await page.getByRole("button", { name: /This Week.*Eviction/i }).click();
+    await page.waitForTimeout(300);
+    expect(page.url()).not.toContain("tab=");
+  });
+
+  test("refreshing on ?tab=rankings stays on rankings tab", async ({ page }) => {
+    await page.goto("/events/bigg-boss-telugu-10?tab=rankings");
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+    await page.reload();
+    await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
+    expect(page.url()).toContain("tab=rankings");
+  });
+});
 
 test.describe("Eviction tab — no Save/Saved controls", () => {
   for (const slug of EVENT_SLUGS) {
     test(`${slug}: no Save or Saved buttons`, async ({ page }) => {
       await page.goto(`/events/${slug}`);
-      await page.getByRole("button", { name: /This Week.*Eviction/i }).click();
       await page.waitForTimeout(3000); // wait for data to load
 
       const saveButtons  = page.getByRole("button", { name: /^❤️ Save$/ });
@@ -122,7 +171,7 @@ test.describe("Eviction tab — counts persist across tab switches", () => {
 
 test.describe("Fan Rankings — unchanged after eviction tab changes", () => {
   test("bigg-boss-tamil-10: rankings tab still has working heart buttons", async ({ page }) => {
-    await page.goto("/events/bigg-boss-tamil-10");
+    await page.goto("/events/bigg-boss-tamil-10?tab=rankings");
     await page.waitForSelector('[aria-label^="Give one favourite"]', { timeout: 10_000 });
 
     const heartButtons = page.locator('[aria-label^="Give one favourite"]');

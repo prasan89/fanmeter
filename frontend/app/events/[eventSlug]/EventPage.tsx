@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, ChevronLeft, RefreshCw } from "lucide-react";
 import { getRankings, addFavourite } from "@/lib/api";
 import type { ContestantRankingDto, RankingsDto } from "@/types";
@@ -322,11 +323,25 @@ function RankingsView({ eventSlug }: { eventSlug: EventSlug }) {
 
 // ── EventPage (main export) ───────────────────────────────────────────────────
 
-type Tab = "rankings" | "eviction";
+type Tab = "eviction" | "rankings";
 
 function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
   const cfg = EVENT_CONFIG[eventSlug];
-  const [activeTab, setActiveTab] = useState<Tab>("rankings");
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+
+  // Default tab is eviction; URL ?tab=rankings switches to rankings
+  const tabParam = searchParams.get("tab");
+  const activeTab: Tab = tabParam === "rankings" ? "rankings" : "eviction";
+
+  function setTab(tab: Tab) {
+    if (tab === "eviction") {
+      // Base URL = eviction (no param needed)
+      router.replace(`/events/${eventSlug}`, { scroll: false });
+    } else {
+      router.replace(`/events/${eventSlug}?tab=rankings`, { scroll: false });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -346,17 +361,7 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
           </div>
           <div className="flex gap-0 -mb-px">
             <button
-              onClick={() => setActiveTab("rankings")}
-              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
-                activeTab === "rankings"
-                  ? "border-rose-500 text-rose-600"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              ❤️ Fan Rankings
-            </button>
-            <button
-              onClick={() => setActiveTab("eviction")}
+              onClick={() => setTab("eviction")}
               className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
                 activeTab === "eviction"
                   ? "border-rose-500 text-rose-600"
@@ -365,19 +370,29 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
             >
               🔴 This Week&apos;s Eviction
             </button>
+            <button
+              onClick={() => setTab("rankings")}
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+                activeTab === "rankings"
+                  ? "border-rose-500 text-rose-600"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              ❤️ Fan Rankings
+            </button>
           </div>
         </div>
       </div>
 
       <div className="pb-20 md:pb-10">
         <TwoColumnLayout sidebar={<AdSidebar />}>
-          {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
           {activeTab === "eviction" && (
             <EvictionTab
               seasonId={cfg.seasonId}
               showSlug={cfg.showSlug}
             />
           )}
+          {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
         </TwoColumnLayout>
       </div>
     </div>
