@@ -142,6 +142,26 @@ public class NominationSyncService {
 
         int weekNumber = crawl.weekNumber();
 
+        // ── Update contestant profile images from HousePulse (always) ─────────
+        List<Contestant> dbContestants = contestantRepository.findBySeasonIdOrderByNameAsc(season.getId());
+        List<ContestantMatch> freshMatches = matchNominees(crawl.nominees(), dbContestants);
+        List<Contestant> imageUpdates = new ArrayList<>();
+        for (ContestantMatch m : freshMatches) {
+            if (m.contestant() != null && m.profileImageUrl() != null
+                    && !m.profileImageUrl().isBlank()
+                    && m.profileImageUrl().contains("housepulse.in")) {
+                String current = m.contestant().getProfileImage();
+                if (current == null || current.contains("unsplash.com") || current.isBlank()) {
+                    m.contestant().setProfileImage(m.profileImageUrl());
+                    imageUpdates.add(m.contestant());
+                }
+            }
+        }
+        if (!imageUpdates.isEmpty()) {
+            contestantRepository.saveAll(imageUpdates);
+            log.info("[NominationSync] {} — updated profile images for {} contestants", showSlug, imageUpdates.size());
+        }
+
         // ── Skip if already verified at this week ─────────────────────────────
         Optional<EvictionPoll> existing = pollRepository
             .findBySeasonIdOrderByWeekNumberDesc(season.getId())
@@ -156,8 +176,7 @@ public class NominationSyncService {
         }
 
         // ── Match nominees to DB contestants ──────────────────────────────────
-        List<Contestant> dbContestants = contestantRepository.findBySeasonIdOrderByNameAsc(season.getId());
-        List<ContestantMatch> matches = matchNominees(crawl.nominees(), dbContestants);
+        List<ContestantMatch> matches = freshMatches;
 
         List<Contestant> matched   = matches.stream().filter(m -> m.contestant() != null).map(ContestantMatch::contestant).distinct().collect(Collectors.toList());
         List<String>     unmatched = matches.stream().filter(m -> m.contestant() == null).map(ContestantMatch::sourceName).collect(Collectors.toList());
