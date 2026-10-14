@@ -97,6 +97,7 @@ jobs:
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.url }} \
+            --build-arg NEXT_PUBLIC_SITE_URL=https://fanmeter.in \
             -t ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
             -t ${{ env.FRONTEND_IMAGE }}:latest .
           docker push ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
@@ -115,7 +116,7 @@ jobs:
             --cpu=1 \
             --min-instances=0 \
             --max-instances=5 \
-            --set-env-vars=NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.url }}
+            --set-env-vars=NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.url }},NEXT_PUBLIC_SITE_URL=https://fanmeter.in
 
       - name: Output URLs
         run: |
