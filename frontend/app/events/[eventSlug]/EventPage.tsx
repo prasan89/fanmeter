@@ -7,6 +7,8 @@ import { AlertCircle, ChevronLeft, RefreshCw } from "lucide-react";
 import { getRankings, addFavourite } from "@/lib/api";
 import type { ContestantRankingDto, RankingsDto } from "@/types";
 import { EvictionTab } from "./EvictionTab";
+import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
+import { AdSidebar } from "@/components/ads/AdSidebar";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -527,9 +529,9 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sticky sub-header */}
+      {/* Sticky sub-header — spans full max-w-5xl to align with two-column content */}
       <div className="bg-white border-b border-gray-100 sticky top-14 z-40">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-3 h-12">
             <Link
               href="/"
@@ -568,14 +570,17 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
-        {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
-        {activeTab === "eviction" && (
-          <EvictionTab
-            seasonId={cfg.seasonId}
-            showSlug={cfg.showSlug}
-          />
-        )}
+      {/* Two-column: rankings/eviction left, ad sidebar right */}
+      <div className="pb-20 md:pb-10">
+        <TwoColumnLayout sidebar={<AdSidebar />}>
+          {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
+          {activeTab === "eviction" && (
+            <EvictionTab
+              seasonId={cfg.seasonId}
+              showSlug={cfg.showSlug}
+            />
+          )}
+        </TwoColumnLayout>
       </div>
     </div>
   );
