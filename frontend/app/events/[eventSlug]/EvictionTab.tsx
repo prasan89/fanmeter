@@ -382,11 +382,14 @@ export function EvictionTab({
   }) ?? [];
 
   const totalNomineeHearts = nomineeDisplayData.reduce((s, { count }) => s + count, 0);
-  const nomineeRows = nomineeDisplayData.map(({ nominee, count }) => ({
-    nominee,
-    favouriteCount: count,
-    voteShare: totalNomineeHearts > 0 ? (count / totalNomineeHearts) * 100 : 0,
-  }));
+  const nomineeRows = nomineeDisplayData
+    .map(({ nominee, count }) => ({
+      nominee,
+      favouriteCount: count,
+      voteShare: totalNomineeHearts > 0 ? (count / totalNomineeHearts) * 100 : 0,
+    }))
+    .sort((a, b) => b.favouriteCount - a.favouriteCount || a.nominee.contestantName.localeCompare(b.nominee.contestantName))
+    .map((row, i) => ({ ...row, nominee: { ...row.nominee, rank: i + 1 } }));
 
   const officialVotingLinks: Record<string, string> = {
     "bigg-boss-tamil":     "Star Vijay / JioHotstar",
