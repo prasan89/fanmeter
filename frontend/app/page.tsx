@@ -141,7 +141,7 @@ export default async function HomePage() {
                       priority
                     />
                     {/* Status badge */}
-                    <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                    <div className="absolute top-3 left-3">
                       {st.isLive ? (
                         <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -150,11 +150,6 @@ export default async function HomePage() {
                       ) : (
                         <span className="px-2.5 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">
                           Season 10
-                        </span>
-                      )}
-                      {st.roundOpen && (
-                        <span className="px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow">
-                          Voting open
                         </span>
                       )}
                     </div>
