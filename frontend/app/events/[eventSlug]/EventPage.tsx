@@ -23,70 +23,76 @@ import {
 
 const EVENT_CONFIG = {
   "bigg-boss-tamil-10": {
-    showSlug:   "bigg-boss-tamil",
-    seasonId:   6,
-    name:       "Bigg Boss Tamil 10",
-    shortName:  "Tamil 10",
-    language:   "Tamil",
-    network:    "Star Vijay & JioHotstar",
-    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/09/1790407725774-9964eee2-d49a-4948-8581-cc38a8c1c2c4/master.webp",
-    accentFrom: "from-pink-600",
-    accentTo:   "to-rose-700",
+    showSlug:     "bigg-boss-tamil",
+    seasonId:     6,
+    name:         "Bigg Boss Tamil 10",
+    shortName:    "Tamil 10",
+    language:     "Tamil",
+    network:      "Star Vijay & JioHotstar",
+    heroImage:    "https://media.housepulse.in/studio/season-featured/2026/09/1790407725774-9964eee2-d49a-4948-8581-cc38a8c1c2c4/master.webp",
+    accentFrom:   "from-pink-600",
+    accentTo:     "to-rose-700",
+    showRankings: false,
   },
   "bigg-boss-telugu-10": {
-    showSlug:   "bigg-boss-telugu",
-    seasonId:   7,
-    name:       "Bigg Boss Telugu 10",
-    shortName:  "Telugu 10",
-    language:   "Telugu",
-    network:    "Star Maa & JioHotstar",
-    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/08/1785688148489-telugu_bigg_boss/master.webp",
-    accentFrom: "from-blue-600",
-    accentTo:   "to-indigo-700",
+    showSlug:     "bigg-boss-telugu",
+    seasonId:     7,
+    name:         "Bigg Boss Telugu 10",
+    shortName:    "Telugu 10",
+    language:     "Telugu",
+    network:      "Star Maa & JioHotstar",
+    heroImage:    "https://media.housepulse.in/studio/season-featured/2026/08/1785688148489-telugu_bigg_boss/master.webp",
+    accentFrom:   "from-blue-600",
+    accentTo:     "to-indigo-700",
+    showRankings: false,
   },
   "bigg-boss-malayalam-8": {
-    showSlug:   "bigg-boss-malayalam",
-    seasonId:   8,
-    name:       "Bigg Boss Malayalam 8",
-    shortName:  "Malayalam 8",
-    language:   "Malayalam",
-    network:    "Asianet & JioHotstar",
-    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/09/1790407766213-b4d169bb-7b77-4462-9370-3d89fa064d35/master.webp",
-    accentFrom: "from-emerald-600",
-    accentTo:   "to-teal-700",
+    showSlug:     "bigg-boss-malayalam",
+    seasonId:     8,
+    name:         "Bigg Boss Malayalam 8",
+    shortName:    "Malayalam 8",
+    language:     "Malayalam",
+    network:      "Asianet & JioHotstar",
+    heroImage:    "https://media.housepulse.in/studio/season-featured/2026/09/1790407766213-b4d169bb-7b77-4462-9370-3d89fa064d35/master.webp",
+    accentFrom:   "from-emerald-600",
+    accentTo:     "to-teal-700",
+    showRankings: false,
   },
   "bigg-boss-kannada-13": {
-    showSlug:   "bigg-boss-kannada",
-    seasonId:   9,
-    name:       "Bigg Boss Kannada 13",
-    shortName:  "Kannada 13",
-    language:   "Kannada",
-    network:    "Colors Kannada & JioHotstar",
-    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/09/1790407697190-04ad2e4e-2400-46e4-b2ca-bcc2ce44dd45/master.webp",
-    accentFrom: "from-amber-600",
-    accentTo:   "to-orange-700",
+    showSlug:     "bigg-boss-kannada",
+    seasonId:     9,
+    name:         "Bigg Boss Kannada 13",
+    shortName:    "Kannada 13",
+    language:     "Kannada",
+    network:      "Colors Kannada & JioHotstar",
+    heroImage:    "https://media.housepulse.in/studio/season-featured/2026/09/1790407697190-04ad2e4e-2400-46e4-b2ca-bcc2ce44dd45/master.webp",
+    accentFrom:   "from-amber-600",
+    accentTo:     "to-orange-700",
+    showRankings: false,
   },
   "bigg-boss-hindi-20": {
-    showSlug:   "bigg-boss-hindi",
-    seasonId:   10,
-    name:       "Bigg Boss Hindi 20",
-    shortName:  "Hindi 20",
-    language:   "Hindi",
-    network:    "Colors TV & JioHotstar",
-    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/08/1785688715040-hindi_bigg_boss/master.webp",
-    accentFrom: "from-purple-700",
-    accentTo:   "to-fuchsia-800",
+    showSlug:     "bigg-boss-hindi",
+    seasonId:     10,
+    name:         "Bigg Boss Hindi 20",
+    shortName:    "Hindi 20",
+    language:     "Hindi",
+    network:      "Colors TV & JioHotstar",
+    heroImage:    "https://media.housepulse.in/studio/season-featured/2026/08/1785688715040-hindi_bigg_boss/master.webp",
+    accentFrom:   "from-purple-700",
+    accentTo:     "to-fuchsia-800",
+    showRankings: true,
   },
   "bigg-boss-bangla-3": {
-    showSlug:   "bigg-boss-bangla",
-    seasonId:   11,
-    name:       "Bigg Boss Bangla 3",
-    shortName:  "Bangla 3",
-    language:   "Bengali",
-    network:    "Star Jalsha & JioHotstar",
-    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/09/1788965542371-bigg-boss_bangla/master.webp",
-    accentFrom: "from-green-700",
-    accentTo:   "to-emerald-800",
+    showSlug:     "bigg-boss-bangla",
+    seasonId:     11,
+    name:         "Bigg Boss Bangla 3",
+    shortName:    "Bangla 3",
+    language:     "Bengali",
+    network:      "Star Jalsha & JioHotstar",
+    heroImage:    "https://media.housepulse.in/studio/season-featured/2026/09/1788965542371-bigg-boss_bangla/master.webp",
+    accentFrom:   "from-green-700",
+    accentTo:     "to-emerald-800",
+    showRankings: true,
   },
 } as const;
 
@@ -384,7 +390,7 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
   const searchParams = useSearchParams();
 
   const tabParam = searchParams.get("tab");
-  const activeTab: Tab = tabParam === "rankings" ? "rankings" : "eviction";
+  const activeTab: Tab = tabParam === "rankings" && cfg.showRankings ? "rankings" : "eviction";
 
   function setTab(tab: Tab) {
     if (tab === "eviction") {
@@ -465,6 +471,7 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
               <Flame className="w-4 h-4" aria-hidden />
               This Week&apos;s Eviction
             </button>
+            {cfg.showRankings && (
             <button
               role="tab"
               id="tab-rankings"
@@ -480,6 +487,7 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
               <Heart className="w-4 h-4" aria-hidden />
               Fan Rankings
             </button>
+            )}
           </div>
         </div>
       </div>
@@ -505,7 +513,7 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
             aria-labelledby="tab-rankings"
             hidden={activeTab !== "rankings"}
           >
-            {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
+            {activeTab === "rankings" && cfg.showRankings && <RankingsView eventSlug={eventSlug} />}
           </div>
         </TwoColumnLayout>
       </div>
