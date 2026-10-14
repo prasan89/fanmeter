@@ -160,7 +160,7 @@ export default async function ContestantPage({ params }: ContestantPageProps) {
                 href={`/vote/${slug}`}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all text-sm"
               >
-                Vote Now
+                Show Support
               </Link>
             </div>
           )}

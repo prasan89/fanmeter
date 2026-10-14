@@ -178,7 +178,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
               href={`/vote/${slug}`}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-semibold rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all text-sm"
             >
-              Vote Now
+              Show Support
             </Link>
           </div>
         </div>
@@ -352,7 +352,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
             <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-purple-200 hover:border-violet-300 hover:shadow transition-all">
               <div className="text-4xl mb-3">🗳️</div>
               <h3 className="font-bold text-gray-900 mb-1 group-hover:text-violet-600 transition-colors">
-                Cast Your Vote
+                Show Your Support
               </h3>
               <p className="text-sm text-gray-400">Support your favourite contestant</p>
             </div>

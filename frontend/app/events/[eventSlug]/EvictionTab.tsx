@@ -34,7 +34,7 @@ function PastPollRow({ poll }: { poll: EvictionPollDto }) {
           </span>
           {winner && (
             <span className="text-xs text-gray-400 ml-2">
-              · Most saves: {winner.contestantName}
+              · Most supported: {winner.contestantName}
             </span>
           )}
         </div>
@@ -46,7 +46,7 @@ function PastPollRow({ poll }: { poll: EvictionPollDto }) {
             <div key={n.contestantId} className="flex items-center gap-2 text-sm">
               <span className="text-gray-400 tabular-nums w-4 text-right">{n.rank}.</span>
               <span className="text-gray-800 font-medium">{n.contestantName}</span>
-              <span className="ml-auto text-xs text-gray-400">{n.voteCount.toLocaleString()} saves</span>
+              <span className="ml-auto text-xs text-gray-400">{n.voteCount.toLocaleString()} supporters</span>
             </div>
           ))}
         </div>
@@ -415,14 +415,14 @@ export function EvictionTab({
       {/* Section heading */}
       <div className="mt-4 mb-4">
         <h2 className="text-lg font-black text-gray-900">This Week&apos;s Eviction</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Heart your favourite to show who you&apos;d save</p>
+        <p className="text-xs text-gray-400 mt-0.5">Show your support and see which contestants fans are backing.</p>
       </div>
 
       {/* Meta bar */}
       <div className="flex items-center justify-between mb-3 gap-2">
         <p className="text-xs text-gray-400">
           {poll
-            ? `${poll.weekLabel ?? `Week ${poll.weekNumber}`} · Vote to SAVE your favourite`
+            ? `${poll.weekLabel ?? `Week ${poll.weekNumber}`} · Show Your Support`
             : "No active eviction poll"}
         </p>
         <div className="flex items-center gap-1 text-xs text-gray-400">

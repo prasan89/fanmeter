@@ -120,7 +120,7 @@ function ContestantCard({
         <button
           onClick={onVote}
           disabled={hasVoted || voteState === "voting"}
-          aria-label={hasVoted ? `Voted for ${c.contestantName}` : `Vote for ${c.contestantName}`}
+          aria-label={hasVoted ? `Supported ${c.contestantName}` : `Support ${c.contestantName}`}
           className={`w-full py-2 rounded-xl text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
             hasVoted
               ? "bg-green-100 text-green-700 cursor-default"
@@ -129,7 +129,7 @@ function ContestantCard({
               : `${btnColor} text-white shadow-sm hover:shadow`
           }`}
         >
-          {hasVoted ? "✓ Voted" : voteState === "voting" ? "Voting…" : "Vote"}
+          {hasVoted ? "✓ Supported" : voteState === "voting" ? "Supporting…" : "Support"}
         </button>
 
         {voteMessage && (
@@ -189,12 +189,12 @@ function ShowVoting({ showSlug }: { showSlug: ShowSlug }) {
       if (res.success) {
         setVoteStates((s) => ({ ...s, [contestantId]: "voted" }));
         setVotedIds((s) => new Set([...s, contestantId]));
-        setVoteMessages((m) => ({ ...m, [contestantId]: "Voted!" }));
+        setVoteMessages((m) => ({ ...m, [contestantId]: "Your support has been counted!" }));
         const updated = await getActiveRound(show.seasonId);
         setResults(updated.results);
       } else if (res.message?.toLowerCase().includes("already voted")) {
         setVoteStates((s) => ({ ...s, [contestantId]: "duplicate" }));
-        setVoteMessages((m) => ({ ...m, [contestantId]: "Already voted this round." }));
+        setVoteMessages((m) => ({ ...m, [contestantId]: "Already supported this round." }));
         setVotedIds((s) => new Set([...s, contestantId]));
       } else {
         setVoteStates((s) => ({ ...s, [contestantId]: "error" }));
@@ -245,7 +245,7 @@ function ShowVoting({ showSlug }: { showSlug: ShowSlug }) {
               <p className="text-sm font-bold text-gray-900">{round.title}</p>
               <p className="text-xs text-gray-400">
                 {totalVotes > 0
-                  ? `${totalVotes.toLocaleString()} votes cast`
+                  ? `${totalVotes.toLocaleString()} fans showing support`
                   : "Support your favourite contestant"}
               </p>
             </div>
@@ -323,7 +323,7 @@ function VotingHomeInner() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-2xl font-black text-gray-900">Fan Vote</h1>
+              <h1 className="text-2xl font-black text-gray-900">Fan Support</h1>
               <p className="text-sm text-gray-400 mt-0.5">Community poll — not an official broadcaster vote</p>
             </div>
             <Link

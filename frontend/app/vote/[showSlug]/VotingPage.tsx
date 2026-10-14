@@ -122,7 +122,7 @@ function ContestantVoteCard({
         <button
           onClick={onVote}
           disabled={hasVoted || voteState === "voting"}
-          aria-label={hasVoted ? `Voted for ${c.contestantName}` : `Vote for ${c.contestantName}`}
+          aria-label={hasVoted ? `Supported ${c.contestantName}` : `Support ${c.contestantName}`}
           className={`w-full py-2 rounded-xl text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
             hasVoted
               ? "bg-green-100 text-green-700 cursor-default"
@@ -131,7 +131,7 @@ function ContestantVoteCard({
               : `${btnColor} text-white shadow-sm hover:shadow`
           }`}
         >
-          {hasVoted ? "✓ Voted" : voteState === "voting" ? "Voting…" : "Vote"}
+          {hasVoted ? "✓ Supported" : voteState === "voting" ? "Supporting…" : "Support"}
         </button>
 
         {voteMessage && (
@@ -200,12 +200,12 @@ export function VotingPage({ paramsPromise }: { paramsPromise: Promise<{ showSlu
       if (res.success) {
         setVoteStates(s => ({ ...s, [contestantId]: "voted" }));
         setVotedIds(s => new Set([...s, contestantId]));
-        setVoteMessages(m => ({ ...m, [contestantId]: `Voted!` }));
+        setVoteMessages(m => ({ ...m, [contestantId]: `Your support has been counted!` }));
         const updated = await getActiveRound(seasonId);
         setResults(updated.results);
       } else if (res.message?.toLowerCase().includes("already voted")) {
         setVoteStates(s => ({ ...s, [contestantId]: "duplicate" }));
-        setVoteMessages(m => ({ ...m, [contestantId]: "Already voted this round." }));
+        setVoteMessages(m => ({ ...m, [contestantId]: "Already supported this round." }));
         setVotedIds(s => new Set([...s, contestantId]));
       } else {
         setVoteStates(s => ({ ...s, [contestantId]: "error" }));
@@ -234,7 +234,7 @@ export function VotingPage({ paramsPromise }: { paramsPromise: Promise<{ showSlu
   const totalVotes = results.reduce((sum, r) => sum + r.voteCount, 0);
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "vote",       label: "Vote" },
+    { id: "vote",       label: "Support" },
     { id: "rankings",   label: "Rankings" },
     { id: "contestants",label: "Contestants" },
     { id: "episodes",   label: "Episodes" },
@@ -258,7 +258,7 @@ export function VotingPage({ paramsPromise }: { paramsPromise: Promise<{ showSlu
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-sm transition-colors"
                 onClick={() => setActiveTab("vote")}
               >
-                Live Fan Vote
+                Live Fan Support
               </button>
             )}
 
@@ -330,8 +330,8 @@ export function VotingPage({ paramsPromise }: { paramsPromise: Promise<{ showSlu
                       <Clock className="w-4 h-4 text-red-500" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900">This week&apos;s fan vote</p>
-                      <p className="text-xs text-gray-400">Support your favourite contestant and see how the community is voting.</p>
+                      <p className="text-sm font-bold text-gray-900">This week&apos;s fan support</p>
+                      <p className="text-xs text-gray-400">Support your favourite contestant and see which contestants fans are backing.</p>
                     </div>
                   </div>
                   {countdown && round.status === "open" && (

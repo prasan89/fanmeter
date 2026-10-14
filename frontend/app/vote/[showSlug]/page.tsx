@@ -14,37 +14,37 @@ const SHOW_META: Record<string, ShowMeta> = {
     label:      "Bigg Boss Tamil 10",
     eventSlug:  "bigg-boss-tamil-10",
     description:
-      "Heart your favourite Bigg Boss Tamil 10 contestant to show who you'd save this week. Independent FanMeter community poll — not an official Star Vijay vote.",
+      "Support your favourite Bigg Boss Tamil 10 contestant on FanMeter. Independent community fan poll — not an official Star Vijay vote.",
   },
   "bigg-boss-telugu": {
     label:      "Bigg Boss Telugu 10",
     eventSlug:  "bigg-boss-telugu-10",
     description:
-      "Heart your favourite Bigg Boss Telugu 10 contestant on FanMeter. Independent community poll — not an official Star Maa vote.",
+      "Support your favourite Bigg Boss Telugu 10 contestant on FanMeter. Independent community fan poll — not an official Star Maa vote.",
   },
   "bigg-boss-malayalam": {
     label:      "Bigg Boss Malayalam 8",
     eventSlug:  "bigg-boss-malayalam-8",
     description:
-      "Support your favourite Bigg Boss Malayalam 8 contestant on FanMeter. Independent community poll — not an official Asianet vote.",
+      "Support your favourite Bigg Boss Malayalam 8 contestant on FanMeter. Independent community fan poll — not an official Asianet vote.",
   },
   "bigg-boss-kannada": {
     label:      "Bigg Boss Kannada 13",
     eventSlug:  "bigg-boss-kannada-13",
     description:
-      "Heart your favourite Bigg Boss Kannada 13 contestant on FanMeter. Independent community poll — not an official Colors Kannada vote.",
+      "Support your favourite Bigg Boss Kannada 13 contestant on FanMeter. Independent community fan poll — not an official Colors Kannada vote.",
   },
   "bigg-boss-hindi": {
     label:      "Bigg Boss Hindi 20",
     eventSlug:  "bigg-boss-hindi-20",
     description:
-      "Support your favourite Bigg Boss Hindi 20 contestant on FanMeter. Independent community poll — not an official Colors TV vote.",
+      "Support your favourite Bigg Boss Hindi 20 contestant on FanMeter. Independent community fan poll — not an official Colors TV vote.",
   },
   "bigg-boss-bangla": {
     label:      "Bigg Boss Bangla 3",
     eventSlug:  "bigg-boss-bangla-3",
     description:
-      "Heart your favourite Bigg Boss Bangla 3 contestant on FanMeter. Independent community poll — not an official Star Jalsha vote.",
+      "Support your favourite Bigg Boss Bangla 3 contestant on FanMeter. Independent community fan poll — not an official Star Jalsha vote.",
   },
 };
 

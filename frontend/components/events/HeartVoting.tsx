@@ -175,7 +175,7 @@ export function HeartButton({
       ref={btnRef}
       onClick={handleClick}
       disabled={pending}
-      aria-label={`Give one favourite to ${contestantName}`}
+      aria-label={`Support ${contestantName}`}
       className="flex flex-col items-center gap-0.5 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 rounded-xl"
       style={{ opacity: pending ? 0.45 : 1, cursor: pending ? "wait" : "pointer" }}
     >

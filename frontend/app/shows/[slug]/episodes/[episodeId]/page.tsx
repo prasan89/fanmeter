@@ -132,8 +132,8 @@ export default async function EpisodePage({ params }: EpisodePageProps) {
         {/* Coming soon voting */}
         <div className="mt-4 bg-white rounded-2xl p-8 text-center border border-dashed border-purple-200">
           <div className="text-4xl mb-3">🗳️</div>
-          <h3 className="font-bold text-gray-900 mb-1">Live Voting</h3>
-          <p className="text-sm text-gray-400">Vote on this episode&apos;s highlights — coming soon</p>
+          <h3 className="font-bold text-gray-900 mb-1">Fan Support</h3>
+          <p className="text-sm text-gray-400">Support contestants on this episode&apos;s highlights — coming soon</p>
           <Link
             href="/vote"
             className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:scale-105 transition-all"
