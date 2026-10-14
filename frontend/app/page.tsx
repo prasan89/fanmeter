@@ -26,7 +26,7 @@ const EVENTS = [
     host:        "Vijay Sethupathi",
     hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779861001595-vijay_sethupathi_tamil_bigg_boss_host/sm.webp",
     network:     "Star Vijay & JioHotstar",
-    heroImage:   "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800",
+    heroImage:   "https://media.housepulse.in/studio/season-featured/2026/09/1790407725774-9964eee2-d49a-4948-8581-cc38a8c1c2c4/master.webp",
     gradFrom:    "from-pink-600",
     gradTo:      "to-rose-700",
     accentBg:    "bg-rose-50",
@@ -42,7 +42,7 @@ const EVENTS = [
     host:        "Nagarjuna Akkineni",
     hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779860959338-nagarjuna_telugu_bigg_boss_host/sm.webp",
     network:     "Star Maa & JioHotstar",
-    heroImage:   "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800",
+    heroImage:   "https://media.housepulse.in/studio/season-featured/2026/08/1785688148489-telugu_bigg_boss/master.webp",
     gradFrom:    "from-blue-600",
     gradTo:      "to-indigo-700",
     accentBg:    "bg-blue-50",
@@ -58,7 +58,7 @@ const EVENTS = [
     host:        "Mohanlal",
     hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779860941775-mohanlal_malayalam_bigg_boss_host/sm.webp",
     network:     "Asianet & JioHotstar",
-    heroImage:   "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800",
+    heroImage:   "https://media.housepulse.in/studio/season-featured/2026/09/1790407766213-b4d169bb-7b77-4462-9370-3d89fa064d35/master.webp",
     gradFrom:    "from-emerald-600",
     gradTo:      "to-teal-700",
     accentBg:    "bg-emerald-50",
@@ -74,7 +74,7 @@ const EVENTS = [
     host:        "Kichcha Sudeepa",
     hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779860918563-kichcha_sudeep_kannada_bigg_boss_host/sm.webp",
     network:     "Colors Kannada & JioHotstar",
-    heroImage:   "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=800",
+    heroImage:   "https://media.housepulse.in/studio/season-featured/2026/09/1790407697190-04ad2e4e-2400-46e4-b2ca-bcc2ce44dd45/master.webp",
     gradFrom:    "from-amber-600",
     gradTo:      "to-orange-700",
     accentBg:    "bg-amber-50",
@@ -135,12 +135,12 @@ export default async function HomePage() {
                   className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"
                 >
                   {/* Poster */}
-                  <div className={`relative h-52 bg-gradient-to-br ${ev.gradFrom} ${ev.gradTo} overflow-hidden`}>
+                  <div className="relative h-52 overflow-hidden bg-gray-900">
                     <Image
                       src={ev.heroImage}
                       alt={ev.title}
                       fill
-                      className="object-cover mix-blend-overlay opacity-25"
+                      className="object-cover object-top"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 340px"
                       priority
                     />
