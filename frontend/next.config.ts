@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "media.housepulse.in",
+      },
+      {
+        protocol: "https",
         hostname: "**.googleapis.com",
       },
       {
