@@ -11,7 +11,7 @@ interface TwoColumnLayoutProps {
  */
 export function TwoColumnLayout({ children, sidebar }: TwoColumnLayoutProps) {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6">
+    <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex gap-8 items-start">
         {/* Primary content */}
         <div className="min-w-0 flex-1">{children}</div>

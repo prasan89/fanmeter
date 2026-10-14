@@ -531,7 +531,7 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
     <div className="min-h-screen bg-gray-50">
       {/* Sticky sub-header — spans full max-w-5xl to align with two-column content */}
       <div className="bg-white border-b border-gray-100 sticky top-14 z-40">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 h-12">
             <Link
               href="/"
