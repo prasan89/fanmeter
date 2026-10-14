@@ -2,6 +2,7 @@ package com.fanclash.api.sync;
 
 import com.fanclash.api.entity.*;
 import com.fanclash.api.repository.*;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -54,6 +55,7 @@ public class NominationSyncService {
     private final ContestantRepository        contestantRepository;
     private final SeasonRepository            seasonRepository;
     private final HousePulseCrawler           crawler;
+    private final EntityManager               entityManager;
 
     // ── Scheduled entry point (fallback for local dev) ────────────────────────
 
@@ -307,6 +309,7 @@ public class NominationSyncService {
         // Only update nominees if the poll is still in draft (not manually opened/managed)
         if ("draft".equals(poll.getStatus()) || "open".equals(poll.getStatus())) {
             nomineeRepository.deleteByPollId(poll.getId());
+            entityManager.flush(); // flush DELETE before INSERTs to avoid unique-constraint violation
             for (Contestant c : nominees) {
                 nomineeRepository.save(EvictionNominee.builder()
                     .poll(poll)

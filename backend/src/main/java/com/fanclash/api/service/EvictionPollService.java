@@ -4,6 +4,7 @@ import com.fanclash.api.dto.*;
 import com.fanclash.api.entity.*;
 import com.fanclash.api.exception.ResourceNotFoundException;
 import com.fanclash.api.repository.*;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,6 +29,7 @@ public class EvictionPollService {
     private final EvictionVoteRepository      voteRepository;
     private final NominationSourceRepository  sourceRepository;
     private final ContestantRepository        contestantRepository;
+    private final EntityManager               entityManager;
     private final SeasonRepository            seasonRepository;
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -158,6 +160,7 @@ public class EvictionPollService {
             throw new IllegalStateException("Cannot modify nominees of a closed/archived poll.");
 
         nomineeRepository.deleteByPollId(pollId);
+        entityManager.flush(); // ensure DELETE is sent before INSERTs to avoid unique-constraint violation
 
         List<EvictionNominee> nominees = req.contestantIds().stream().map(cid -> {
             Contestant c = contestantRepository.findById(cid)

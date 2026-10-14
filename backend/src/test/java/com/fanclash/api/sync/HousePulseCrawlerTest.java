@@ -133,7 +133,8 @@ class HousePulseCrawlerTest {
             mock(NominationSyncLogRepository.class),
             mock(ContestantRepository.class),
             mock(SeasonRepository.class),
-            new HousePulseCrawler()
+            new HousePulseCrawler(),
+            mock(jakarta.persistence.EntityManager.class)
         );
     }
 
