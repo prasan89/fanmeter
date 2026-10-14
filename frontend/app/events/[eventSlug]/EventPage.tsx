@@ -46,6 +46,18 @@ const EVENT_CONFIG = {
     name:      "Bigg Boss Kannada 13",
     shortName: "Kannada 13",
   },
+  "bigg-boss-hindi-20": {
+    showSlug:  "bigg-boss-hindi",
+    seasonId:  10,
+    name:      "Bigg Boss Hindi 20",
+    shortName: "Hindi 20",
+  },
+  "bigg-boss-bangla-3": {
+    showSlug:  "bigg-boss-bangla",
+    seasonId:  11,
+    name:      "Bigg Boss Bangla 3",
+    shortName: "Bangla 3",
+  },
 } as const;
 
 export type EventSlug = keyof typeof EVENT_CONFIG;
