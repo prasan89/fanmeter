@@ -216,18 +216,6 @@ function NominationStateBanner({
     );
   }
 
-  if (state === "NOMINATIONS_PUBLISHED") {
-    return (
-      <div className="flex items-center gap-2 mb-2">
-        {sourceAttribution && (
-          <span className="text-[10px] text-gray-400">
-            Source: <a href={sourceAttribution} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600 inline-flex items-center gap-0.5">HousePulse <ExternalLink className="w-2.5 h-2.5" /></a>
-          </span>
-        )}
-      </div>
-    );
-  }
-
   return null;
 }
 
