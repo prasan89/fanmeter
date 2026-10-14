@@ -4,6 +4,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Vote, AlertCircle, ArrowLeft, Users, TrendingUp } from "lucide-react";
 import { getShowSeasons, getActiveRound } from "@/lib/api";
+import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
+import { AdSidebar } from "@/components/ads/AdSidebar";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +72,8 @@ export default async function PollPage({ params }: PollPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+      <TwoColumnLayout sidebar={<AdSidebar />}>
+        <div className="py-6">
         {/* Back */}
         <Link
           href="/polls"
@@ -194,7 +197,8 @@ export default async function PollPage({ params }: PollPageProps) {
             This is an independent FanMeter community poll. Results do not affect official Bigg Boss evictions.
           </p>
         </div>
-      </div>
+        </div>
+      </TwoColumnLayout>
     </div>
   );
 }

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Share2, Clock, AlertCircle, Search } from "lucide-react";
 import { getActiveRound, castVote } from "@/lib/api";
 import type { VotingRoundDto, ContestantVoteDto } from "@/types";
+import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
+import { AdSidebar } from "@/components/ads/AdSidebar";
 
 const KNOWN_SHOWS: Record<string, { name: string; shortName: string; accentColor: string; barColor: string; btnColor: string }> = {
   "bigg-boss-tamil":  {
@@ -300,7 +302,8 @@ export function VotingPage({ paramsPromise }: { paramsPromise: Promise<{ showSlu
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5">
+      <TwoColumnLayout sidebar={<AdSidebar />}>
+        <div className="py-5">
         {/* ── VOTE TAB ─────────────────────────────────────── */}
         {activeTab === "vote" && (
           <>
@@ -446,7 +449,8 @@ export function VotingPage({ paramsPromise }: { paramsPromise: Promise<{ showSlu
             </Link>
           </div>
         )}
-      </div>
+        </div>
+      </TwoColumnLayout>
     </div>
   );
 }

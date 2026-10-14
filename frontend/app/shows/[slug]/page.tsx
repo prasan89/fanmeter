@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/Badge";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate, categoryLabel } from "@/lib/utils";
+import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
+import { AdSidebar } from "@/components/ads/AdSidebar";
 import type { Show, Season, Contestant, Episode } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -135,7 +137,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <TwoColumnLayout sidebar={<AdSidebar />}>
         {/* Show meta + season switcher */}
         <div className="py-6 flex flex-wrap items-start gap-4 border-b border-gray-200">
           <div className="flex-1 min-w-[200px]">
@@ -357,7 +359,7 @@ export default async function ShowPage({ params, searchParams }: ShowPageProps) 
             </div>
           </Link>
         </div>
-      </div>
+      </TwoColumnLayout>
     </div>
   );
 }

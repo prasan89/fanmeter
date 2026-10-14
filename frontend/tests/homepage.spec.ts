@@ -23,7 +23,7 @@ async function goToHomepage(page: Page) {
 test.describe("Event cards — LIVE badge", () => {
   test("all six event cards display the LIVE badge", async ({ page }) => {
     await goToHomepage(page);
-    const liveBadges = page.getByText("LIVE");
+    const liveBadges = page.getByText("LIVE", { exact: true });
     await expect(liveBadges).toHaveCount(6);
   });
 });

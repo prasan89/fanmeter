@@ -147,20 +147,24 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Page title — aligned to content container */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-2xl font-black text-gray-900">Choose an event</h1>
-          <p className="text-sm text-gray-400 mt-1">
-            Vote for your favourite contestant in the ongoing season
-          </p>
-        </div>
-      </div>
-
-      {/* Two-column: event cards left, ad sidebar right */}
       <div className="flex-1 py-8">
         <TwoColumnLayout sidebar={<AdSidebar />}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Compact event-discovery intro */}
+          <div className="mb-6">
+            <p className="text-[10px] font-black tracking-widest text-violet-400 uppercase mb-1">
+              The Fan Community
+            </p>
+            <h1 className="text-2xl font-black text-gray-900 leading-tight">
+              Your favourite show. Your voice.
+            </h1>
+            <p className="text-sm text-gray-400 mt-1 max-w-lg">
+              Explore live seasons, support contestants, and discover fan rankings.
+              Unofficial fan polls — not affiliated with Bigg Boss or its broadcasters.
+            </p>
+          </div>
+
+          {/* Event cards grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {EVENTS.map((ev, i) => {
               const st = statuses[i];
               return (
@@ -175,7 +179,7 @@ export default async function HomePage() {
                       alt={ev.title}
                       fill
                       className="object-cover object-top"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 340px"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
                       priority
                     />
                     {/* Status badge */}

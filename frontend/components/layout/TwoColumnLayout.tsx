@@ -19,7 +19,7 @@ export function TwoColumnLayout({ children, sidebar }: TwoColumnLayoutProps) {
         {/* Ad sidebar — desktop only */}
         {sidebar && (
           <aside
-            className="hidden lg:block w-[300px] flex-shrink-0 sticky top-20 self-start"
+            className="hidden lg:block w-[300px] flex-shrink-0 sticky top-[72px] self-start"
             aria-label="Advertisements"
           >
             {sidebar}

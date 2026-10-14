@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef, Suspense } from "react
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, ChevronLeft, RefreshCw } from "lucide-react";
+import { AlertCircle, ChevronLeft, RefreshCw, Flame, Heart } from "lucide-react";
 import { getRankings, addFavourite } from "@/lib/api";
 import type { ContestantRankingDto, RankingsDto } from "@/types";
 import { EvictionTab } from "./EvictionTab";
@@ -23,40 +23,70 @@ import {
 
 const EVENT_CONFIG = {
   "bigg-boss-tamil-10": {
-    showSlug:  "bigg-boss-tamil",
-    seasonId:  6,
-    name:      "Bigg Boss Tamil 10",
-    shortName: "Tamil 10",
+    showSlug:   "bigg-boss-tamil",
+    seasonId:   6,
+    name:       "Bigg Boss Tamil 10",
+    shortName:  "Tamil 10",
+    language:   "Tamil",
+    network:    "Star Vijay & JioHotstar",
+    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/09/1790407725774-9964eee2-d49a-4948-8581-cc38a8c1c2c4/master.webp",
+    accentFrom: "from-pink-600",
+    accentTo:   "to-rose-700",
   },
   "bigg-boss-telugu-10": {
-    showSlug:  "bigg-boss-telugu",
-    seasonId:  7,
-    name:      "Bigg Boss Telugu 10",
-    shortName: "Telugu 10",
+    showSlug:   "bigg-boss-telugu",
+    seasonId:   7,
+    name:       "Bigg Boss Telugu 10",
+    shortName:  "Telugu 10",
+    language:   "Telugu",
+    network:    "Star Maa & JioHotstar",
+    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/08/1785688148489-telugu_bigg_boss/master.webp",
+    accentFrom: "from-blue-600",
+    accentTo:   "to-indigo-700",
   },
   "bigg-boss-malayalam-8": {
-    showSlug:  "bigg-boss-malayalam",
-    seasonId:  8,
-    name:      "Bigg Boss Malayalam 8",
-    shortName: "Malayalam 8",
+    showSlug:   "bigg-boss-malayalam",
+    seasonId:   8,
+    name:       "Bigg Boss Malayalam 8",
+    shortName:  "Malayalam 8",
+    language:   "Malayalam",
+    network:    "Asianet & JioHotstar",
+    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/09/1790407766213-b4d169bb-7b77-4462-9370-3d89fa064d35/master.webp",
+    accentFrom: "from-emerald-600",
+    accentTo:   "to-teal-700",
   },
   "bigg-boss-kannada-13": {
-    showSlug:  "bigg-boss-kannada",
-    seasonId:  9,
-    name:      "Bigg Boss Kannada 13",
-    shortName: "Kannada 13",
+    showSlug:   "bigg-boss-kannada",
+    seasonId:   9,
+    name:       "Bigg Boss Kannada 13",
+    shortName:  "Kannada 13",
+    language:   "Kannada",
+    network:    "Colors Kannada & JioHotstar",
+    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/09/1790407697190-04ad2e4e-2400-46e4-b2ca-bcc2ce44dd45/master.webp",
+    accentFrom: "from-amber-600",
+    accentTo:   "to-orange-700",
   },
   "bigg-boss-hindi-20": {
-    showSlug:  "bigg-boss-hindi",
-    seasonId:  10,
-    name:      "Bigg Boss Hindi 20",
-    shortName: "Hindi 20",
+    showSlug:   "bigg-boss-hindi",
+    seasonId:   10,
+    name:       "Bigg Boss Hindi 20",
+    shortName:  "Hindi 20",
+    language:   "Hindi",
+    network:    "Colors TV & JioHotstar",
+    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/08/1785688715040-hindi_bigg_boss/master.webp",
+    accentFrom: "from-purple-700",
+    accentTo:   "to-fuchsia-800",
   },
   "bigg-boss-bangla-3": {
-    showSlug:  "bigg-boss-bangla",
-    seasonId:  11,
-    name:      "Bigg Boss Bangla 3",
-    shortName: "Bangla 3",
+    showSlug:   "bigg-boss-bangla",
+    seasonId:   11,
+    name:       "Bigg Boss Bangla 3",
+    shortName:  "Bangla 3",
+    language:   "Bengali",
+    network:    "Star Jalsha & JioHotstar",
+    heroImage:  "https://media.housepulse.in/studio/season-featured/2026/09/1788965542371-bigg-boss_bangla/master.webp",
+    accentFrom: "from-green-700",
+    accentTo:   "to-emerald-800",
   },
 } as const;
 
@@ -90,23 +120,28 @@ function ContestantRow({
 }) {
   const barWidth = Math.min(100, Math.max(0, c.voteShare));
   const pctLabel = c.voteShare.toFixed(1) + "%";
+  const isTopRank = c.rank === 1;
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-100 bg-white hover:border-rose-100 hover:shadow-sm transition-all duration-150">
+    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-150 ${
+      isTopRank
+        ? "bg-amber-50 border-amber-100 hover:border-amber-200 hover:shadow-sm"
+        : "bg-white border-gray-100 hover:border-rose-100 hover:shadow-sm"
+    }`}>
       {/* Rank */}
       <div className="w-6 flex items-center justify-center flex-shrink-0">
         <RankIcon rank={c.rank} />
       </div>
 
       {/* Avatar */}
-      <div className="w-10 h-10 rounded-full overflow-hidden bg-violet-100 flex-shrink-0 relative">
+      <div className="w-12 h-12 rounded-full overflow-hidden bg-violet-100 flex-shrink-0 relative">
         {c.profileImage ? (
           <Image
             src={c.profileImage}
             alt={c.contestantName}
             fill
             className="object-cover object-top"
-            sizes="40px"
+            sizes="48px"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-sm font-black text-violet-400">
@@ -121,7 +156,7 @@ function ContestantRow({
           {c.contestantName}
         </p>
         <div className="flex items-center gap-2 mt-1">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full bg-rose-400 transition-all duration-700"
               style={{ width: `${barWidth}%` }}
@@ -243,7 +278,7 @@ function RankingsView({ eventSlug }: { eventSlug: EventSlug }) {
     return (
       <div className="space-y-2 pt-4">
         {Array.from({ length: 10 }).map((_, i) => (
-          <div key={i} className="h-14 bg-white rounded-xl animate-pulse border border-gray-100" />
+          <div key={i} className="h-16 bg-white rounded-xl animate-pulse border border-gray-100" />
         ))}
       </div>
     );
@@ -295,7 +330,13 @@ function RankingsView({ eventSlug }: { eventSlug: EventSlug }) {
         />
       ))}
 
-      <div className="flex items-center justify-between mt-4 mb-3 gap-2">
+      {/* Section heading */}
+      <div className="mt-4 mb-4">
+        <h2 className="text-lg font-black text-gray-900">Fan Rankings</h2>
+        <p className="text-xs text-gray-400 mt-0.5">All-time fan favourites · updated live</p>
+      </div>
+
+      <div className="flex items-center justify-between mb-3 gap-2">
         <p className="text-xs text-gray-400">
           {totalFavourites > 0
             ? `${totalFavourites.toLocaleString()} total favourites`
@@ -342,13 +383,11 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
   const router       = useRouter();
   const searchParams = useSearchParams();
 
-  // Default tab is eviction; URL ?tab=rankings switches to rankings
   const tabParam = searchParams.get("tab");
   const activeTab: Tab = tabParam === "rankings" ? "rankings" : "eviction";
 
   function setTab(tab: Tab) {
     if (tab === "eviction") {
-      // Base URL = eviction (no param needed)
       router.replace(`/events/${eventSlug}`, { scroll: false });
     } else {
       router.replace(`/events/${eventSlug}?tab=rankings`, { scroll: false });
@@ -357,9 +396,42 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Event header — non-sticky gradient banner */}
+      <div className={`bg-gradient-to-r ${cfg.accentFrom} ${cfg.accentTo}`}>
+        <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex items-start gap-4">
+            {/* Poster thumbnail */}
+            <div className="hidden sm:block relative w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
+              <Image
+                src={cfg.heroImage}
+                alt={cfg.name}
+                fill
+                className="object-cover object-top"
+                sizes="64px"
+              />
+            </div>
+            {/* Text */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-red-500 text-white text-[10px] font-black rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  LIVE
+                </span>
+                <span className="px-2 py-0.5 bg-white/20 text-white text-[10px] font-semibold rounded-full">
+                  {cfg.language}
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">{cfg.name}</h1>
+              <p className="text-white/70 text-xs mt-1">{cfg.network} · Unofficial fan poll</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Breadcrumb + tab bar — sticky below site header */}
       <div className="bg-white border-b border-gray-100 sticky top-14 z-40">
         <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 h-12">
+          <div className="flex items-center gap-3 h-10">
             <Link
               href="/"
               className="flex items-center gap-1 text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0 text-sm font-medium"
@@ -371,26 +443,42 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
             <span className="text-gray-200 select-none flex-shrink-0">|</span>
             <span className="text-sm font-bold text-gray-800 truncate flex-1 min-w-0">{cfg.name}</span>
           </div>
-          <div className="flex gap-0 -mb-px">
+
+          {/* Tab bar */}
+          <div
+            className="flex gap-0 -mb-px"
+            role="tablist"
+            aria-label="Event sections"
+          >
             <button
+              role="tab"
+              id="tab-eviction"
+              aria-selected={activeTab === "eviction"}
+              aria-controls="panel-eviction"
               onClick={() => setTab("eviction")}
-              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 activeTab === "eviction"
                   ? "border-rose-500 text-rose-600"
                   : "border-transparent text-gray-400 hover:text-gray-600"
               }`}
             >
-              🔴 This Week&apos;s Eviction
+              <Flame className="w-4 h-4" aria-hidden />
+              This Week&apos;s Eviction
             </button>
             <button
+              role="tab"
+              id="tab-rankings"
+              aria-selected={activeTab === "rankings"}
+              aria-controls="panel-rankings"
               onClick={() => setTab("rankings")}
-              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 activeTab === "rankings"
                   ? "border-rose-500 text-rose-600"
                   : "border-transparent text-gray-400 hover:text-gray-600"
               }`}
             >
-              ❤️ Fan Rankings
+              <Heart className="w-4 h-4" aria-hidden />
+              Fan Rankings
             </button>
           </div>
         </div>
@@ -398,13 +486,27 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
 
       <div className="pb-20 md:pb-10">
         <TwoColumnLayout sidebar={<AdSidebar />}>
-          {activeTab === "eviction" && (
-            <EvictionTab
-              seasonId={cfg.seasonId}
-              showSlug={cfg.showSlug}
-            />
-          )}
-          {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
+          <div
+            id="panel-eviction"
+            role="tabpanel"
+            aria-labelledby="tab-eviction"
+            hidden={activeTab !== "eviction"}
+          >
+            {activeTab === "eviction" && (
+              <EvictionTab
+                seasonId={cfg.seasonId}
+                showSlug={cfg.showSlug}
+              />
+            )}
+          </div>
+          <div
+            id="panel-rankings"
+            role="tabpanel"
+            aria-labelledby="tab-rankings"
+            hidden={activeTab !== "rankings"}
+          >
+            {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
+          </div>
         </TwoColumnLayout>
       </div>
     </div>

@@ -80,14 +80,14 @@ function NomineeHeartRow({
       </span>
 
       {/* Avatar */}
-      <div className="w-10 h-10 rounded-full overflow-hidden bg-violet-100 flex-shrink-0 relative">
+      <div className="w-12 h-12 rounded-full overflow-hidden bg-violet-100 flex-shrink-0 relative">
         {nominee.profileImage ? (
           <Image
             src={nominee.profileImage}
             alt={nominee.contestantName}
             fill
             className="object-cover object-top"
-            sizes="40px"
+            sizes="48px"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-sm font-black text-violet-400">
@@ -102,7 +102,7 @@ function NomineeHeartRow({
           {nominee.contestantName}
         </p>
         <div className="flex items-center gap-2 mt-1">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full bg-rose-400 transition-all duration-700"
               style={{ width: `${barWidth}%` }}
@@ -409,8 +409,14 @@ export function EvictionTab({
         />
       ))}
 
+      {/* Section heading */}
+      <div className="mt-4 mb-4">
+        <h2 className="text-lg font-black text-gray-900">This Week&apos;s Eviction</h2>
+        <p className="text-xs text-gray-400 mt-0.5">Heart your favourite to show who you&apos;d save</p>
+      </div>
+
       {/* Meta bar */}
-      <div className="flex items-center justify-between mt-4 mb-3 gap-2">
+      <div className="flex items-center justify-between mb-3 gap-2">
         <p className="text-xs text-gray-400">
           {poll
             ? `${poll.weekLabel ?? `Week ${poll.weekNumber}`} · Vote to SAVE your favourite`
