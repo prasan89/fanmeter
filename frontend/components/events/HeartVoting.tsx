@@ -2,6 +2,8 @@
 
 import React, { useState, useRef } from "react";
 
+import { formatCount } from "@/lib/utils";
+
 // ── CSS keyframes (injected once per page) ────────────────────────────────────
 
 export const FLOAT_KEYFRAMES = `
@@ -166,9 +168,7 @@ export function HeartButton({
     onClick(rect);
   }
 
-  const countLabel = count >= 1000
-    ? `${(count / 1000).toFixed(1)}k`
-    : String(count);
+  const countLabel = formatCount(count);
 
   return (
     <button

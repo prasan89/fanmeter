@@ -21,6 +21,10 @@ export function slugToTitle(slug: string): string {
     .join(" ");
 }
 
+export function formatCount(n: number): string {
+  return n.toLocaleString("en-IN");
+}
+
 export function categoryLabel(category: string): string {
   const map: Record<string, string> = {
     "reality-tv": "Reality TV",
