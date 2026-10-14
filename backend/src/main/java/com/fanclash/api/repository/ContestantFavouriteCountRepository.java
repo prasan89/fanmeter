@@ -27,6 +27,13 @@ public interface ContestantFavouriteCountRepository
     int atomicIncrement(@Param("seasonId") Long seasonId,
                         @Param("contestantId") Long contestantId);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE ContestantFavouriteCount c SET c.total = c.total + :amount, c.updatedAt = CURRENT_TIMESTAMP " +
+           "WHERE c.seasonId = :seasonId AND c.contestantId = :contestantId")
+    int atomicAdd(@Param("seasonId") Long seasonId,
+                  @Param("contestantId") Long contestantId,
+                  @Param("amount") long amount);
+
     @Query(value = "SELECT total FROM contestant_favourite_counts " +
                    "WHERE season_id = :seasonId AND contestant_id = :contestantId",
            nativeQuery = true)

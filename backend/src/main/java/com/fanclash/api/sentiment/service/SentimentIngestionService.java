@@ -4,6 +4,7 @@ import com.fanclash.api.entity.Contestant;
 import com.fanclash.api.entity.Season;
 import com.fanclash.api.repository.ContestantRepository;
 import com.fanclash.api.repository.SeasonRepository;
+import com.fanclash.api.service.ExternalVoteInjectionService;
 import com.fanclash.api.sentiment.adapter.SentimentSourceAdapter;
 import com.fanclash.api.sentiment.entity.*;
 import com.fanclash.api.sentiment.repository.*;
@@ -20,10 +21,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Fetches external fan poll signals every 6 hours and stores them in the sentiment tables.
- *
- * INTEGRITY RULE: External raw_count values are NEVER added to fan_votes or
- * contestant_favourite_counts. This service only writes to sentiment_* tables.
+ * Fetches external fan poll signals every 6 hours, stores them in the sentiment tables,
+ * and applies vote deltas directly to contestant_favourite_counts and eviction_nominees.
  */
 @Slf4j
 @Service
@@ -49,6 +48,7 @@ public class SentimentIngestionService {
     private final ContestantRepository contestantRepository;
     private final SeasonRepository seasonRepository;
     private final List<SentimentSourceAdapter> adapters;
+    private final ExternalVoteInjectionService voteInjectionService;
 
     // ── Scheduled entry point ─────────────────────────────────────────────────
 
@@ -89,6 +89,11 @@ public class SentimentIngestionService {
                     totalObservations += written;
                     finishRun(run, written, null, 200);
                     log.info("[SentimentIngestion] source={} show={} observations={}", source.getSourceKey(), slug, written);
+                    // Apply deltas to favourite counts and eviction nominees
+                    if (written > 0) {
+                        pollRepository.findTopBySourceIdAndShowSlugOrderByFetchedAtDesc(source.getId(), slug)
+                            .ifPresent(poll -> voteInjectionService.applyDeltasForShow(source.getSourceKey(), slug, poll));
+                    }
                 } catch (Exception e) {
                     log.error("[SentimentIngestion] source={} show={} failed: {}", source.getSourceKey(), slug, e.getMessage(), e);
                     errors.add(source.getSourceKey() + "/" + slug + ": " + e.getMessage());

@@ -239,11 +239,13 @@ public class EvictionPollService {
                 row -> ((Number) row[0]).longValue(),
                 row -> ((Number) row[1]).longValue()));
 
-        long totalVotes = voteCounts.values().stream().mapToLong(Long::longValue).sum();
+        long totalVotes = nominees.stream()
+            .mapToLong(n -> voteCounts.getOrDefault(n.getContestant().getId(), 0L) + n.getExternalVoteBoost())
+            .sum();
 
         List<EvictionNomineeDto> result = nominees.stream().map(n -> {
             Contestant c = n.getContestant();
-            long count = voteCounts.getOrDefault(c.getId(), 0L);
+            long count = voteCounts.getOrDefault(c.getId(), 0L) + n.getExternalVoteBoost();
             double share = totalVotes > 0 ? (count * 100.0) / totalVotes : 0.0;
             return new EvictionNomineeDto(c.getId(), c.getName(), c.getSlug(), c.getProfileImage(), count, share, 0);
         })

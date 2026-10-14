@@ -35,6 +35,10 @@ public class EvictionNominee {
     @Column(name = "admin_notes")
     private String adminNotes;
 
+    @Column(name = "external_vote_boost", nullable = false)
+    @Builder.Default
+    private long externalVoteBoost = 0L;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -9,4 +9,5 @@ public interface SentimentPollRepository extends JpaRepository<SentimentPoll, Lo
     Optional<SentimentPoll> findBySourceIdAndShowSlugAndPeriodLabel(Long sourceId, String showSlug, String periodLabel);
     List<SentimentPoll> findByShowSlugOrderByFetchedAtDesc(String showSlug);
     List<SentimentPoll> findByShowSlugAndPeriodLabelOrderByFetchedAtDesc(String showSlug, String periodLabel);
+    Optional<SentimentPoll> findTopBySourceIdAndShowSlugOrderByFetchedAtDesc(Long sourceId, String showSlug);
 }
