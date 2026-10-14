@@ -24,6 +24,7 @@ const EVENTS = [
     title:       "Bigg Boss Tamil 10",
     subtitle:    "Season 10 · Carnivizha",
     host:        "Vijay Sethupathi",
+    hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779861001595-vijay_sethupathi_tamil_bigg_boss_host/sm.webp",
     network:     "Star Vijay & JioHotstar",
     heroImage:   "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800",
     gradFrom:    "from-pink-600",
@@ -39,6 +40,7 @@ const EVENTS = [
     title:       "Bigg Boss Telugu 10",
     subtitle:    "Season 10 · Dasavatharam",
     host:        "Nagarjuna Akkineni",
+    hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779860959338-nagarjuna_telugu_bigg_boss_host/sm.webp",
     network:     "Star Maa & JioHotstar",
     heroImage:   "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800",
     gradFrom:    "from-blue-600",
@@ -54,6 +56,7 @@ const EVENTS = [
     title:       "Bigg Boss Malayalam 8",
     subtitle:    "Season 8 · Asianet",
     host:        "Mohanlal",
+    hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779860941775-mohanlal_malayalam_bigg_boss_host/sm.webp",
     network:     "Asianet & JioHotstar",
     heroImage:   "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800",
     gradFrom:    "from-emerald-600",
@@ -69,6 +72,7 @@ const EVENTS = [
     title:       "Bigg Boss Kannada 13",
     subtitle:    "Season 13 · Colors Kannada",
     host:        "Kichcha Sudeepa",
+    hostImage:   "https://media.housepulse.in/studio/host-photo/2026/05/1779860918563-kichcha_sudeep_kannada_bigg_boss_host/sm.webp",
     network:     "Colors Kannada & JioHotstar",
     heroImage:   "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=800",
     gradFrom:    "from-amber-600",
@@ -164,7 +168,15 @@ export default async function HomePage() {
                   <div className="p-4 flex flex-col flex-1">
                     {/* Host + network */}
                     <div className={`flex items-center gap-3 px-3 py-2.5 ${ev.accentBg} rounded-xl border ${ev.accentBorder} mb-4`}>
-                      <span className="text-base flex-shrink-0">🎬</span>
+                      <div className="relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
+                        <Image
+                          src={ev.hostImage}
+                          alt={ev.host}
+                          fill
+                          className="object-cover object-top"
+                          sizes="36px"
+                        />
+                      </div>
                       <div className="min-w-0">
                         <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Host</p>
                         <p className={`text-sm font-bold ${ev.accentText} truncate`}>{ev.host}</p>
