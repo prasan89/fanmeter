@@ -181,12 +181,16 @@ public class SentimentIngestionService {
             List<Contestant> dbContestants,
             String periodLabel) {
 
-        // 1. Check alias table first (highest confidence)
+        // 1. Check alias table first (highest confidence) — by slug or name
         if (obs.sourceSlug() != null) {
             Optional<SentimentContestantAlias> alias = aliasRepository.findBySourceIdAndAliasSlug(source.getId(), obs.sourceSlug());
             if (alias.isPresent()) {
                 return new ResolvedContestant(alias.get().getContestant(), false);
             }
+        }
+        List<SentimentContestantAlias> nameAliases = aliasRepository.findBySourceIdAndAliasNameIgnoreCase(source.getId(), obs.sourceName());
+        if (!nameAliases.isEmpty()) {
+            return new ResolvedContestant(nameAliases.get(0).getContestant(), false);
         }
 
         // 2. Try fuzzy name matching against DB contestants
