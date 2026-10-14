@@ -3,139 +3,18 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { AlertCircle, RefreshCw, ChevronDown, ChevronUp, Shield, Clock, ExternalLink } from "lucide-react";
-import { getActiveEvictionPoll, castEvictionVote, getEvictionHistory } from "@/lib/api";
+import { getActiveEvictionPoll, getEvictionHistory, getRankings, addFavourite } from "@/lib/api";
 import type { EvictionPollDto, EvictionNomineeDto, NominationState } from "@/types";
+import {
+  FLOAT_KEYFRAMES,
+  FloatingHeart,
+  HeartButton,
+  FloatItem,
+  newIdempotencyKey,
+  getOrCreateVoterKey,
+} from "@/components/events/HeartVoting";
 
-const POLL_INTERVAL_MS   = 30_000;
-const VOTED_KEY          = "fanmeter_eviction_votes"; // localStorage: { pollId: contestantId }
-const VOTER_KEY_STORAGE  = "fanmeter_voter_key";
-
-function getOrCreateVoterKey(): string {
-  if (typeof window === "undefined") return "";
-  let k = localStorage.getItem(VOTER_KEY_STORAGE);
-  if (!k) {
-    k = "fmk_" + crypto.randomUUID().replace(/-/g, "");
-    localStorage.setItem(VOTER_KEY_STORAGE, k);
-  }
-  return k;
-}
-
-function getVotedMap(): Record<number, number> {
-  if (typeof window === "undefined") return {};
-  try { return JSON.parse(localStorage.getItem(VOTED_KEY) ?? "{}") as Record<number, number>; }
-  catch { return {}; }
-}
-function saveVote(pollId: number, contestantId: number) {
-  const m = getVotedMap();
-  m[pollId] = contestantId;
-  localStorage.setItem(VOTED_KEY, JSON.stringify(m));
-}
-
-// ── Countdown ─────────────────────────────────────────────────────────────────
-
-function Countdown({ closesAt }: { closesAt: string | null }) {
-  const [label, setLabel] = useState("");
-
-  useEffect(() => {
-    if (!closesAt) return;
-    const tick = () => {
-      const diff = new Date(closesAt).getTime() - Date.now();
-      if (diff <= 0) { setLabel("Closed"); return; }
-      const h = Math.floor(diff / 3_600_000);
-      const m = Math.floor((diff % 3_600_000) / 60_000);
-      const s = Math.floor((diff % 60_000) / 1_000);
-      setLabel(`${h}h ${m}m ${s}s remaining`);
-    };
-    tick();
-    const id = setInterval(tick, 1_000);
-    return () => clearInterval(id);
-  }, [closesAt]);
-
-  if (!closesAt || !label) return null;
-  return (
-    <span className="text-xs text-amber-600 font-semibold tabular-nums">{label}</span>
-  );
-}
-
-// ── NomineeCard ───────────────────────────────────────────────────────────────
-
-function NomineeCard({
-  nominee,
-  voted,
-  pending,
-  onVote,
-}: {
-  nominee:  EvictionNomineeDto;
-  voted:    boolean;
-  pending:  boolean;
-  onVote:   () => void;
-}) {
-  const barWidth = Math.min(100, Math.max(0, nominee.voteShare));
-
-  return (
-    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-150 ${
-      voted
-        ? "border-emerald-200 bg-emerald-50"
-        : "border-gray-100 bg-white hover:border-rose-100 hover:shadow-sm"
-    }`}>
-      {/* Rank */}
-      <span className="text-xs font-bold text-gray-400 tabular-nums w-5 text-center flex-shrink-0">
-        {nominee.rank}
-      </span>
-
-      {/* Avatar */}
-      <div className="w-10 h-10 rounded-full overflow-hidden bg-violet-100 flex-shrink-0 relative">
-        {nominee.profileImage ? (
-          <Image
-            src={nominee.profileImage}
-            alt={nominee.contestantName}
-            fill
-            className="object-cover object-top"
-            sizes="40px"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-sm font-black text-violet-400">
-            {nominee.contestantName.charAt(0)}
-          </div>
-        )}
-      </div>
-
-      {/* Name + bar */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
-          {nominee.contestantName}
-        </p>
-        <div className="flex items-center gap-2 mt-1">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-rose-400 transition-all duration-700"
-              style={{ width: `${barWidth}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-gray-400 tabular-nums w-9 text-right flex-shrink-0">
-            {nominee.voteCount.toLocaleString()}
-          </span>
-        </div>
-      </div>
-
-      {/* Save button */}
-      <button
-        onClick={onVote}
-        disabled={pending || voted}
-        aria-label={voted ? `Voted to save ${nominee.contestantName}` : `Save ${nominee.contestantName}`}
-        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 ${
-          voted
-            ? "bg-emerald-500 text-white cursor-default"
-            : pending
-            ? "bg-gray-200 text-gray-400 cursor-wait"
-            : "bg-rose-500 hover:bg-rose-600 active:scale-95 text-white"
-        }`}
-      >
-        {voted ? "Saved ✓" : "❤️ Save"}
-      </button>
-    </div>
-  );
-}
+const POLL_INTERVAL_MS = 30_000;
 
 // ── PastPollRow ───────────────────────────────────────────────────────────────
 
@@ -176,6 +55,78 @@ function PastPollRow({ poll }: { poll: EvictionPollDto }) {
   );
 }
 
+// ── NomineeHeartRow ───────────────────────────────────────────────────────────
+
+function NomineeHeartRow({
+  nominee,
+  favouriteCount,
+  voteShare,
+  pending,
+  onHeart,
+}: {
+  nominee:        EvictionNomineeDto;
+  favouriteCount: number;
+  voteShare:      number;
+  pending:        boolean;
+  onHeart:        (rect: DOMRect) => void;
+}) {
+  const barWidth = Math.min(100, Math.max(0, voteShare));
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-100 bg-white hover:border-rose-100 hover:shadow-sm transition-all duration-150">
+      {/* Rank */}
+      <span className="text-xs font-bold text-gray-400 tabular-nums w-5 text-center flex-shrink-0">
+        {nominee.rank}
+      </span>
+
+      {/* Avatar */}
+      <div className="w-10 h-10 rounded-full overflow-hidden bg-violet-100 flex-shrink-0 relative">
+        {nominee.profileImage ? (
+          <Image
+            src={nominee.profileImage}
+            alt={nominee.contestantName}
+            fill
+            className="object-cover object-top"
+            sizes="40px"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-sm font-black text-violet-400">
+            {nominee.contestantName.charAt(0)}
+          </div>
+        )}
+      </div>
+
+      {/* Name + progress bar */}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+          {nominee.contestantName}
+        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-rose-400 transition-all duration-700"
+              style={{ width: `${barWidth}%` }}
+            />
+          </div>
+          <span className="text-[10px] text-gray-400 tabular-nums w-9 text-right flex-shrink-0">
+            {voteShare.toFixed(1)}%
+          </span>
+        </div>
+      </div>
+
+      {/* Heart */}
+      <div className="flex-shrink-0">
+        <HeartButton
+          pending={pending}
+          count={favouriteCount}
+          onClick={onHeart}
+          contestantName={nominee.contestantName}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ── State banners ─────────────────────────────────────────────────────────────
 
 function NominationStateBanner({
@@ -185,7 +136,7 @@ function NominationStateBanner({
   state: NominationState | null;
   sourceAttribution: string | null;
 }) {
-  if (!state) return null;
+  if (!state || state === "NOMINATIONS_PUBLISHED" || state === "POLL_OPEN") return null;
 
   if (state === "NEEDS_VERIFICATION") {
     return (
@@ -270,7 +221,6 @@ function EmptyPollState({
     );
   }
 
-  // Generic / null state — nominations not yet discovered
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
       <Shield className="w-10 h-10 text-gray-300" />
@@ -293,12 +243,18 @@ export function EvictionTab({
 }) {
   const voterKeyRef = useRef<string>("");
   useEffect(() => { voterKeyRef.current = getOrCreateVoterKey(); }, []);
+
   const [poll,       setPoll]       = useState<EvictionPollDto | null | undefined>(undefined);
   const [history,    setHistory]    = useState<EvictionPollDto[]>([]);
-  const [pendingId,  setPendingId]  = useState<number | null>(null);
-  const [votedMap,   setVotedMap]   = useState<Record<number, number>>({});
   const [error,      setError]      = useState<string | null>(null);
   const [updatedAt,  setUpdatedAt]  = useState<string>("");
+
+  // Heart voting state
+  const [favouriteCounts,  setFavouriteCounts]  = useState<Record<number, number>>({});
+  const [optimisticDeltas, setOptimisticDeltas] = useState<Record<number, number>>({});
+  const [pendingIds,       setPendingIds]       = useState<Set<number>>(new Set());
+  const [floats,           setFloats]           = useState<FloatItem[]>([]);
+  const floatCounterRef = useRef(0);
 
   const load = useCallback(async (silent = false) => {
     setError(null);
@@ -315,30 +271,80 @@ export function EvictionTab({
     }
   }, [seasonId]);
 
+  const loadFavourites = useCallback(async () => {
+    try {
+      const data = await getRankings(seasonId, voterKeyRef.current);
+      const map: Record<number, number> = {};
+      data.rankings.forEach(r => { map[r.contestantId] = r.favouriteCount; });
+      setFavouriteCounts(map);
+      setOptimisticDeltas({});
+    } catch {
+      // Non-fatal — counts will show 0 until resolved
+    }
+  }, [seasonId]);
+
   useEffect(() => {
-    setVotedMap(getVotedMap());
     load();
-  }, [load]);
+    loadFavourites();
+  }, [load, loadFavourites]);
 
   useEffect(() => {
     const id = setInterval(() => load(true), POLL_INTERVAL_MS);
     return () => clearInterval(id);
   }, [load]);
 
-  async function handleVote(nominee: EvictionNomineeDto) {
-    if (!poll || pendingId !== null) return;
-    if (votedMap[poll.id] !== undefined) return;
+  async function handleHeart(nominee: EvictionNomineeDto, rect: DOMRect) {
+    if (pendingIds.has(nominee.contestantId)) return;
 
-    setPendingId(nominee.contestantId);
+    const voterKey = voterKeyRef.current;
+    const iKey     = newIdempotencyKey();
+
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!prefersReduced) {
+      const id = ++floatCounterRef.current;
+      const x  = rect.left + rect.width / 2;
+      const y  = rect.top;
+      setFloats(prev => [...prev, { id, x, y }]);
+    }
+
+    setOptimisticDeltas(prev => ({
+      ...prev,
+      [nominee.contestantId]: (prev[nominee.contestantId] ?? 0) + 1,
+    }));
+    setPendingIds(s => new Set([...s, nominee.contestantId]));
+
     try {
-      const res = await castEvictionVote(seasonId, poll.id, nominee.contestantId, voterKeyRef.current);
-      if (res.success) {
-        saveVote(poll.id, nominee.contestantId);
-        setVotedMap(getVotedMap());
-        load(true);
+      const res = await addFavourite(seasonId, nominee.contestantId, voterKey, iKey);
+      if (res.success && !res.duplicate) {
+        setOptimisticDeltas(prev => {
+          const next = { ...prev };
+          const rem  = (next[nominee.contestantId] ?? 0) - 1;
+          if (rem <= 0) delete next[nominee.contestantId];
+          else          next[nominee.contestantId] = rem;
+          return next;
+        });
+        loadFavourites();
+      } else if (!res.success) {
+        setOptimisticDeltas(prev => {
+          const next = { ...prev };
+          const rem  = (next[nominee.contestantId] ?? 0) - 1;
+          if (rem <= 0) delete next[nominee.contestantId];
+          else          next[nominee.contestantId] = rem;
+          return next;
+        });
       }
+    } catch {
+      setOptimisticDeltas(prev => {
+        const next = { ...prev };
+        const rem  = (next[nominee.contestantId] ?? 0) - 1;
+        if (rem <= 0) delete next[nominee.contestantId];
+        else          next[nominee.contestantId] = rem;
+        return next;
+      });
     } finally {
-      setPendingId(null);
+      setPendingIds(s => { const n = new Set(s); n.delete(nominee.contestantId); return n; });
     }
   }
 
@@ -364,26 +370,45 @@ export function EvictionTab({
     );
   }
 
-  const votedContestantId = poll ? votedMap[poll.id] : undefined;
   const nominationState   = poll?.nominationState ?? null;
   const sourceAttribution = poll?.sourceAttribution ?? null;
-
-  // A poll with nominees that are ready to vote on
   const hasVotableNominees = poll?.nominees && poll.nominees.length > 0 && poll.status === "open";
-
-  // Show empty state when there's no poll, or poll has no nominees yet
   const showEmpty = !poll || (!hasVotableNominees && nominationState !== "NOMINATIONS_PUBLISHED");
 
+  // Compute per-nominee favourite counts (with optimistic deltas) and vote share
+  const nomineeDisplayData = poll?.nominees.map(n => {
+    const count = (favouriteCounts[n.contestantId] ?? 0) + (optimisticDeltas[n.contestantId] ?? 0);
+    return { nominee: n, count };
+  }) ?? [];
+
+  const totalNomineeHearts = nomineeDisplayData.reduce((s, { count }) => s + count, 0);
+  const nomineeRows = nomineeDisplayData.map(({ nominee, count }) => ({
+    nominee,
+    favouriteCount: count,
+    voteShare: totalNomineeHearts > 0 ? (count / totalNomineeHearts) * 100 : 0,
+  }));
+
   const officialVotingLinks: Record<string, string> = {
-    "bigg-boss-tamil":    "Star Vijay / JioHotstar",
-    "bigg-boss-telugu":   "Star Maa / JioHotstar",
+    "bigg-boss-tamil":     "Star Vijay / JioHotstar",
+    "bigg-boss-telugu":    "Star Maa / JioHotstar",
     "bigg-boss-malayalam": "Asianet / JioHotstar",
-    "bigg-boss-kannada":  "Colors Kannada / JioHotstar",
+    "bigg-boss-kannada":   "Colors Kannada / JioHotstar",
   };
   const officialLink = officialVotingLinks[showSlug] ?? "the official broadcaster";
 
   return (
     <>
+      <style>{FLOAT_KEYFRAMES}</style>
+
+      {floats.map(f => (
+        <FloatingHeart
+          key={f.id}
+          x={f.x}
+          y={f.y}
+          onDone={() => setFloats(prev => prev.filter(i => i.id !== f.id))}
+        />
+      ))}
+
       {/* Meta bar */}
       <div className="flex items-center justify-between mt-4 mb-3 gap-2">
         <p className="text-xs text-gray-400">
@@ -397,7 +422,7 @@ export function EvictionTab({
         </div>
       </div>
 
-      {/* State banner (above nominees when poll exists with a state) */}
+      {/* State banner */}
       {poll && <NominationStateBanner state={nominationState} sourceAttribution={sourceAttribution} />}
 
       {/* Empty / pending state */}
@@ -405,36 +430,20 @@ export function EvictionTab({
         <EmptyPollState state={nominationState} sourceAttribution={sourceAttribution} />
       )}
 
-      {/* Active poll with nominees */}
+      {/* Nominee list with hearts */}
       {!showEmpty && poll && (
-        <>
-          {/* Countdown */}
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-gray-400 uppercase tracking-wide font-semibold">
-              Nominees
-            </span>
-            <Countdown closesAt={poll.closesAt} />
-          </div>
-
-          {/* Nominees */}
-          <div className="space-y-2">
-            {poll.nominees.map(n => (
-              <NomineeCard
-                key={n.contestantId}
-                nominee={n}
-                voted={votedContestantId === n.contestantId}
-                pending={pendingId === n.contestantId}
-                onVote={() => handleVote(n)}
-              />
-            ))}
-          </div>
-
-          {votedContestantId !== undefined && (
-            <p className="text-center text-xs text-emerald-600 font-semibold mt-3">
-              Your vote has been counted. Results update every 30s.
-            </p>
-          )}
-        </>
+        <div className="space-y-2">
+          {nomineeRows.map(({ nominee, favouriteCount, voteShare }) => (
+            <NomineeHeartRow
+              key={nominee.contestantId}
+              nominee={nominee}
+              favouriteCount={favouriteCount}
+              voteShare={voteShare}
+              pending={pendingIds.has(nominee.contestantId)}
+              onHeart={(rect) => handleHeart(nominee, rect)}
+            />
+          ))}
+        </div>
       )}
 
       {/* Past polls */}
