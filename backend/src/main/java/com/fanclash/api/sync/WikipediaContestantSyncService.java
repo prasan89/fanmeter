@@ -43,7 +43,9 @@ public class WikipediaContestantSyncService {
         "bigg-boss-tamil",    "Bigg_Boss_(Tamil_TV_series)_season_10",
         "bigg-boss-telugu",   "Bigg_Boss_(Telugu_TV_series)_season_10",
         "bigg-boss-malayalam","Bigg_Boss_(Malayalam_TV_series)_season_8",
-        "bigg-boss-kannada",  "Bigg_Boss_Kannada_season_13"
+        "bigg-boss-kannada",  "Bigg_Boss_Kannada_season_13",
+        "bigg-boss-hindi",    "Bigg_Boss_(Hindi_TV_series)_season_20",
+        "bigg-boss-bangla",   "Bigg_Boss_Bangla_season_3"
     );
 
     // Wikipedia source URLs for attribution
@@ -51,7 +53,9 @@ public class WikipediaContestantSyncService {
         "bigg-boss-tamil",    "https://en.wikipedia.org/wiki/Bigg_Boss_(Tamil_TV_series)_season_10",
         "bigg-boss-telugu",   "https://en.wikipedia.org/wiki/Bigg_Boss_(Telugu_TV_series)_season_10",
         "bigg-boss-malayalam","https://en.wikipedia.org/wiki/Bigg_Boss_(Malayalam_TV_series)_season_8",
-        "bigg-boss-kannada",  "https://en.wikipedia.org/wiki/Bigg_Boss_Kannada_season_13"
+        "bigg-boss-kannada",  "https://en.wikipedia.org/wiki/Bigg_Boss_Kannada_season_13",
+        "bigg-boss-hindi",    "https://en.wikipedia.org/wiki/Bigg_Boss_(Hindi_TV_series)_season_20",
+        "bigg-boss-bangla",   "https://en.wikipedia.org/wiki/Bigg_Boss_Bangla_season_3"
     );
 
     private final ContestantRepository contestantRepository;

@@ -42,7 +42,9 @@ public class NominationSyncService {
         "bigg-boss-tamil",    new ShowConfig("bigg-boss-tamil",    "season-10", "Bigg Boss Tamil 10"),
         "bigg-boss-telugu",   new ShowConfig("bigg-boss-telugu",   "season-10", "Bigg Boss Telugu 10"),
         "bigg-boss-malayalam",new ShowConfig("bigg-boss-malayalam","season-8",  "Bigg Boss Malayalam 8"),
-        "bigg-boss-kannada",  new ShowConfig("bigg-boss-kannada",  "season-13", "Bigg Boss Kannada 13")
+        "bigg-boss-kannada",  new ShowConfig("bigg-boss-kannada",  "season-13", "Bigg Boss Kannada 13"),
+        "bigg-boss-hindi",    new ShowConfig("bigg-boss-hindi",    "season-20", "Bigg Boss Hindi 20"),
+        "bigg-boss-bangla",   new ShowConfig("bigg-boss-bangla",   "season-3",  "Bigg Boss Bangla 3")
     );
 
     /** Minimum fraction of nominees that must match known DB contestants to auto-publish */

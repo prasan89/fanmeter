@@ -4,10 +4,11 @@ import React, { useEffect, useState, useCallback, useRef, Suspense } from "react
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, ChevronLeft, RefreshCw, Flame, Heart } from "lucide-react";
+import { AlertCircle, ChevronLeft, RefreshCw, Flame, Heart, TrendingUp } from "lucide-react";
 import { getRankings, addFavourite } from "@/lib/api";
 import type { ContestantRankingDto, RankingsDto } from "@/types";
 import { EvictionTab } from "./EvictionTab";
+import { SentimentTab } from "./SentimentTab";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
 import { AdSidebar } from "@/components/ads/AdSidebar";
 import {
@@ -376,7 +377,7 @@ function RankingsView({ eventSlug }: { eventSlug: EventSlug }) {
 
 // ── EventPage (main export) ───────────────────────────────────────────────────
 
-type Tab = "eviction" | "rankings";
+type Tab = "eviction" | "rankings" | "sentiment";
 
 function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
   const cfg = EVENT_CONFIG[eventSlug];
@@ -384,11 +385,15 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
   const searchParams = useSearchParams();
 
   const tabParam = searchParams.get("tab");
-  const activeTab: Tab = tabParam === "rankings" ? "rankings" : "eviction";
+  const activeTab: Tab = tabParam === "rankings" ? "rankings"
+    : tabParam === "sentiment" ? "sentiment"
+    : "eviction";
 
   function setTab(tab: Tab) {
     if (tab === "eviction") {
       router.replace(`/events/${eventSlug}`, { scroll: false });
+    } else if (tab === "sentiment") {
+      router.replace(`/events/${eventSlug}?tab=sentiment`, { scroll: false });
     } else {
       router.replace(`/events/${eventSlug}?tab=rankings`, { scroll: false });
     }
@@ -480,6 +485,21 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
               <Heart className="w-4 h-4" aria-hidden />
               Fan Rankings
             </button>
+            <button
+              role="tab"
+              id="tab-sentiment"
+              aria-selected={activeTab === "sentiment"}
+              aria-controls="panel-sentiment"
+              onClick={() => setTab("sentiment")}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                activeTab === "sentiment"
+                  ? "border-violet-500 text-violet-600"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" aria-hidden />
+              Fan Sentiment
+            </button>
           </div>
         </div>
       </div>
@@ -506,6 +526,14 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
             hidden={activeTab !== "rankings"}
           >
             {activeTab === "rankings" && <RankingsView eventSlug={eventSlug} />}
+          </div>
+          <div
+            id="panel-sentiment"
+            role="tabpanel"
+            aria-labelledby="tab-sentiment"
+            hidden={activeTab !== "sentiment"}
+          >
+            {activeTab === "sentiment" && <SentimentTab eventSlug={eventSlug} />}
           </div>
         </TwoColumnLayout>
       </div>
