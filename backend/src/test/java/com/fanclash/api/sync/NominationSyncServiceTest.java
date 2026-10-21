@@ -97,11 +97,49 @@ class NominationSyncServiceTest {
         existing.setEvictionNominees(List.of());
         when(pollRepo.findBySeasonIdOrderByWeekNumberDesc(1L)).thenReturn(List.of(existing));
 
-        service.runSync("bigg-boss-telugu");
+        service.runSync("bigg-boss-telugu", false);
 
         // No new nominees saved because poll was already verified+open
         verify(nomineeRepo, never()).deleteByPollId(any());
         verify(nomineeRepo, never()).save(any());
+    }
+
+    // ── Forced re-sync — force=true bypasses ALREADY_VERIFIED guard ──────────
+
+    @Test
+    @DisplayName("force=true re-syncs a verified+open poll and replaces nominees")
+    void forcedResync_bypassesAlreadyVerifiedGuard() {
+        NominationSyncLog log = syncLog("bigg-boss-hindi");
+        when(syncLogRepo.save(any())).thenReturn(log);
+
+        Season season = season(1L);
+        when(seasonRepo.findByShowSlugAndStatus("bigg-boss-hindi", "live")).thenReturn(List.of(season));
+
+        HousePulseCrawler.CrawlResult crawl = successCrawl(7,
+            nominee("Bigg Contestant A", "bigg-contestant-a", null),
+            nominee("Bigg Contestant B", "bigg-contestant-b", null)
+        );
+        when(crawler.fetchNominations(anyString())).thenReturn(crawl);
+
+        Contestant ca = contestant(1L, "Bigg Contestant A", "bigg-contestant-a");
+        Contestant cb = contestant(2L, "Bigg Contestant B", "bigg-contestant-b");
+        when(contestantRepo.findBySeasonIdOrderByNameAsc(1L)).thenReturn(List.of(ca, cb));
+
+        // Already-verified open poll exists for week 7
+        EvictionPoll existing = poll(10L, season, 7, "open", true, "NOMINATIONS_PUBLISHED");
+        existing.setEvictionNominees(List.of());
+        when(pollRepo.findBySeasonIdOrderByWeekNumberDesc(1L)).thenReturn(List.of(existing));
+        when(pollRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(nomineeRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(sourceRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        // force=true — should bypass the guard and update nominees
+        service.runSync("bigg-boss-hindi", true);
+
+        verify(nomineeRepo).deleteByPollId(10L);
+        ArgumentCaptor<EvictionNominee> cap = ArgumentCaptor.forClass(EvictionNominee.class);
+        verify(nomineeRepo, atLeast(2)).save(cap.capture());
+        assertThat(cap.getAllValues()).hasSize(2);
     }
 
     // ── Nomination changes — new nominees replace old ────────────────────────
@@ -133,7 +171,7 @@ class NominationSyncServiceTest {
         when(nomineeRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(sourceRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        service.runSync("bigg-boss-telugu");
+        service.runSync("bigg-boss-telugu", false);
 
         // Old nominees deleted, new ones saved
         verify(nomineeRepo).deleteByPollId(2L);
@@ -171,7 +209,7 @@ class NominationSyncServiceTest {
         when(nomineeRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(sourceRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        service.runSync("bigg-boss-telugu");
+        service.runSync("bigg-boss-telugu", false);
 
         // Poll should have been saved with status=open
         ArgumentCaptor<EvictionPoll> cap = ArgumentCaptor.forClass(EvictionPoll.class);
@@ -211,7 +249,7 @@ class NominationSyncServiceTest {
         when(nomineeRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(sourceRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        service.runSync("bigg-boss-telugu");
+        service.runSync("bigg-boss-telugu", false);
 
         ArgumentCaptor<EvictionPoll> cap = ArgumentCaptor.forClass(EvictionPoll.class);
         verify(pollRepo, atLeast(1)).save(cap.capture());
@@ -242,7 +280,7 @@ class NominationSyncServiceTest {
         when(pollRepo.findBySeasonIdOrderByWeekNumberDesc(1L)).thenReturn(List.of(openPoll));
         when(pollRepo.save(any())).thenReturn(openPoll);
 
-        service.runSync("bigg-boss-telugu");
+        service.runSync("bigg-boss-telugu", false);
 
         // Nominees must NOT be deleted when source fails
         verify(nomineeRepo, never()).deleteByPollId(any());
@@ -296,7 +334,7 @@ class NominationSyncServiceTest {
         when(sourceRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         // runSync over 2 slugs — neither should throw
-        NominationSyncService.SyncResult result = service.runSync(null);
+        NominationSyncService.SyncResult result = service.runSync(null, false);
 
         // Should have processed both — status partial or success
         assertThat(result.status()).isNotEqualTo("exception");
@@ -313,7 +351,7 @@ class NominationSyncServiceTest {
         when(syncLogRepo.save(any())).thenReturn(log);
         when(seasonRepo.findByShowSlugAndStatus("bigg-boss-bangla", "live")).thenReturn(List.of());
 
-        assertThatCode(() -> service.runSync("bigg-boss-bangla")).doesNotThrowAnyException();
+        assertThatCode(() -> service.runSync("bigg-boss-bangla", false)).doesNotThrowAnyException();
         verify(crawler, never()).fetchNominations(anyString());
     }
 
@@ -341,7 +379,7 @@ class NominationSyncServiceTest {
         when(nomineeRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         when(sourceRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.runSync("bigg-boss-telugu");
+        service.runSync("bigg-boss-telugu", false);
 
         // ContestantRepository may only be called with findBySeasonIdOrderByNameAsc and saveAll
         // — never with methods that could affect fan_votes

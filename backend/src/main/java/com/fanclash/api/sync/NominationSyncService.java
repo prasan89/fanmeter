@@ -64,12 +64,20 @@ public class NominationSyncService {
     @Scheduled(cron = "0 0 */6 * * *", zone = "UTC")  // every 6 hours
     public void scheduledSync() {
         log.info("[NominationSync] Scheduled 6-hour sync starting");
-        runSync(null);
+        runSync(null, false);
+    }
+
+    // Weekly Monday forced refresh — 8:30 PM IST (15:00 UTC). Override via FANMETER_MONDAY_SYNC_CRON.
+    @Scheduled(cron = "${fanmeter.nomination-sync.monday-cron:0 0 15 * * MON}", zone = "Asia/Kolkata")
+    public void mondaySync() {
+        log.info("[NominationSync] Monday weekly forced sync starting (Asia/Kolkata)");
+        runSync(null, true);
     }
 
     // ── Public sync entry point ───────────────────────────────────────────────
 
-    public SyncResult runSync(String showSlug) {
+    /** @param force when true, re-syncs polls that are already verified+open (bypasses ALREADY_VERIFIED guard) */
+    public SyncResult runSync(String showSlug, boolean force) {
         List<String> slugs = showSlug != null
             ? List.of(showSlug)
             : List.copyOf(SHOW_CONFIGS.keySet());
@@ -80,7 +88,7 @@ public class NominationSyncService {
         for (String slug : slugs) {
             NominationSyncLog syncLog = startLog(slug);
             try {
-                ShowSyncResult r = syncShow(slug);
+                ShowSyncResult r = syncShow(slug, force);
                 totalNominees  += r.nominees();
                 totalConflicts += r.conflicts();
                 finishLog(syncLog, 1, r.nominees(), r.conflicts(), null);
@@ -119,7 +127,7 @@ public class NominationSyncService {
 
     // ── Per-show sync ────────────────────────────────────────────────────────
 
-    private ShowSyncResult syncShow(String showSlug) {
+    private ShowSyncResult syncShow(String showSlug, boolean force) {
         ShowConfig cfg = SHOW_CONFIGS.get(showSlug);
         if (cfg == null) {
             log.warn("[NominationSync] {} — no config; skipping", showSlug);
@@ -173,10 +181,15 @@ public class NominationSyncService {
             .filter(p -> p.getWeekNumber() == weekNumber)
             .findFirst();
 
-        if (existing.isPresent() && existing.get().getSourceVerified()
+        // ── Skip if already verified at this week (unless forced) ────────────
+        if (!force && existing.isPresent() && existing.get().getSourceVerified()
                 && "open".equals(existing.get().getStatus())) {
-            log.info("[NominationSync] {} — week {} already verified+open; skipping", showSlug, weekNumber);
+            log.info("[NominationSync] {} — week {} already verified+open; skipping (use force=true to override)", showSlug, weekNumber);
             return new ShowSyncResult(existing.get().getEvictionNominees().size(), 0, "ALREADY_VERIFIED");
+        }
+        if (force && existing.isPresent() && existing.get().getSourceVerified()
+                && "open".equals(existing.get().getStatus())) {
+            log.info("[NominationSync] {} — week {} verified+open but force=true; re-syncing nominees", showSlug, weekNumber);
         }
 
         // ── Match nominees to DB contestants ──────────────────────────────────

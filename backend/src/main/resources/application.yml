@@ -59,3 +59,8 @@ fanmeter:
       max-per-contestant: ${FANMETER_BOT_MAX_PER_CONTESTANT:3}
       # Comma-separated "eventSlug:seasonId" pairs
       targets: "${FANMETER_BOT_TARGETS:bigg-boss-tamil-10:6}"
+  nomination-sync:
+    # Monday forced re-sync fires 8:30 PM IST (15:00 UTC) every week.
+    # In production use Cloud Scheduler to POST /api/admin/nomination-sync/trigger?force=true
+    # instead of relying on this cron (Cloud Run scales to zero between requests).
+    monday-cron: "${FANMETER_MONDAY_SYNC_CRON:0 0 15 * * MON}"

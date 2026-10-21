@@ -90,8 +90,9 @@ public class EvictionAdminController {
 
     @PostMapping("/nomination-sync/trigger")
     public ResponseEntity<ApiResponse<NominationSyncService.SyncResult>> triggerSync(
-            @RequestParam(required = false) String show) {
-        NominationSyncService.SyncResult result = nominationSyncService.runSync(show);
+            @RequestParam(required = false) String show,
+            @RequestParam(defaultValue = "false") boolean force) {
+        NominationSyncService.SyncResult result = nominationSyncService.runSync(show, force);
         return ResponseEntity.ok(result.errors().isEmpty()
             ? ApiResponse.ok(result)
             : ApiResponse.error("Sync completed with errors.", result));
