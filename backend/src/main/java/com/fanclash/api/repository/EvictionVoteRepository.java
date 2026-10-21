@@ -18,4 +18,6 @@ public interface EvictionVoteRepository extends JpaRepository<EvictionVote, Long
     List<Object[]> countVotesByPoll(@Param("pollId") Long pollId);
 
     long countByPollIdAndContestantId(Long pollId, Long contestantId);
+
+    void deleteByPollId(Long pollId);
 }

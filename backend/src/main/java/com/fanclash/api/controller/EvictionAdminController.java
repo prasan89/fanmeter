@@ -76,6 +76,15 @@ public class EvictionAdminController {
         return ResponseEntity.ok(ApiResponse.ok(evictionPollService.verifySources(pollId)));
     }
 
+    @PostMapping("/eviction/polls/{pollId}/reset-votes")
+    public ResponseEntity<ApiResponse<EvictionPollDto>> resetVotes(@PathVariable Long pollId) {
+        try {
+            return ResponseEntity.ok(ApiResponse.ok(evictionPollService.resetVotes(pollId)));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(400).body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
     @GetMapping("/eviction/polls/season/{seasonId}")
     public ResponseEntity<ApiResponse<List<EvictionPollDto>>> getPollsForSeason(@PathVariable Long seasonId) {
         return ResponseEntity.ok(ApiResponse.ok(evictionPollService.getAllPollsForSeason(seasonId)));

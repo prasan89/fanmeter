@@ -261,6 +261,18 @@ public class EvictionPollService {
         return result;
     }
 
+    @Transactional
+    public EvictionPollDto resetVotes(Long pollId) {
+        EvictionPoll poll = pollRepository.findById(pollId)
+            .orElseThrow(() -> new ResourceNotFoundException("Eviction poll not found: " + pollId));
+        if (!"open".equals(poll.getStatus()))
+            throw new IllegalStateException("Can only reset votes on an open poll (status=" + poll.getStatus() + ")");
+        voteRepository.deleteByPollId(pollId);
+        log.info("[EvictionAdmin] Votes reset for poll {} (season {} week {})",
+            pollId, poll.getSeason().getId(), poll.getWeekNumber());
+        return toDto(poll, buildNominees(poll));
+    }
+
     private EvictionPollDto toDto(EvictionPoll p, List<EvictionNomineeDto> nominees) {
         String attribution = sourceRepository.findTopByPollIdOrderByRetrievedAtDesc(p.getId())
             .map(s -> "HousePulse · " + (p.getUpdatedAt() != null ? p.getUpdatedAt().toString() : ""))
