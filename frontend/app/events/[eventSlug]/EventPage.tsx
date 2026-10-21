@@ -570,7 +570,7 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
 
             {/* Desktop comments panel — always rendered, hidden via CSS on mobile */}
             <aside
-              className="hidden lg:flex flex-col w-full sticky top-[104px] self-start"
+              className="hidden lg:block w-full sticky top-[104px] self-start"
               aria-label="Live fan comments"
             >
               <LiveChat

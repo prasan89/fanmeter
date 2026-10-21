@@ -543,11 +543,16 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
   return (
     <div
       className={cn(
-        "flex min-w-0 flex-col",
-        "bg-white border border-gray-200 rounded-xl overflow-hidden relative",
+        "flex min-w-0 flex-col overflow-hidden",
+        "bg-white border border-gray-200 rounded-xl relative",
         className
       )}
-      style={{ height: "min(680px, calc(100vh - 180px))", minHeight: "400px" }}
+      style={{
+        height: "min(680px, calc(100vh - 180px))",
+        maxHeight: "680px",
+        minHeight: "400px",
+        alignSelf: "flex-start",
+      }}
       aria-label="Comments"
       role="region"
     >
