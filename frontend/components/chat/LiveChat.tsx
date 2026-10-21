@@ -543,10 +543,11 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
   return (
     <div
       className={cn(
-        "flex h-[min(680px,calc(100vh-180px))] min-h-[400px] min-w-0 flex-col",
+        "flex min-w-0 flex-col",
         "bg-white border border-gray-200 rounded-xl overflow-hidden relative",
         className
       )}
+      style={{ height: "min(680px, calc(100vh - 180px))", minHeight: "400px" }}
       aria-label="Comments"
       role="region"
     >
