@@ -48,3 +48,14 @@ fanclash:
     secret: ${ADMIN_SECRET:dev-secret}
   api:
     version: v1
+
+fanmeter:
+  chat:
+    bot:
+      enabled: ${FANMETER_BOT_ENABLED:true}
+      cron: "${FANMETER_BOT_CRON:0 0/30 * * * *}"
+      min-comments: ${FANMETER_BOT_MIN_COMMENTS:5}
+      max-comments: ${FANMETER_BOT_MAX_COMMENTS:10}
+      max-per-contestant: ${FANMETER_BOT_MAX_PER_CONTESTANT:3}
+      # Comma-separated "eventSlug:seasonId" pairs
+      targets: "${FANMETER_BOT_TARGETS:bigg-boss-tamil-10:6}"

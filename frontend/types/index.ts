@@ -188,6 +188,7 @@ export interface ChatMessageDto {
   messageText: string;
   createdAt: string;
   isOwn: boolean;
+  automated: boolean;
 }
 
 export interface ChatHistoryResponse {

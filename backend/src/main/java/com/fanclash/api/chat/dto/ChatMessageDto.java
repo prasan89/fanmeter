@@ -8,5 +8,6 @@ public record ChatMessageDto(
     String displayName,
     String messageText,
     Instant createdAt,
-    boolean isOwn    // true when the requesting guest token sent this message
+    boolean isOwn,      // true when the requesting guest token sent this message
+    boolean automated   // true for ScheduledFanChatJob-generated messages
 ) {}

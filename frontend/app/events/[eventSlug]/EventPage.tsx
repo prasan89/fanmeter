@@ -516,11 +516,19 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
       </div>
 
       <div className="pb-20 md:pb-10">
-        {/* Desktop: three-column layout — content | chat panel | ads */}
+        {/* Desktop: grid layout — voting (68%) | comments (32%) | ads (fixed, xl+) */}
         <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-6 items-start">
+          {/*
+            lg–xl: 2-col grid, ~68% voting / ~32% comments
+            xl+:   3-col grid, voting flex-1 / comments fixed 420px / ads fixed 300px
+          */}
+          <div className="
+            flex flex-col
+            lg:grid lg:grid-cols-event-2col lg:gap-5 lg:items-start
+            xl:grid-cols-event-3col
+          ">
             {/* Main content column */}
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <div
                 id="panel-eviction"
                 role="tabpanel"
@@ -561,10 +569,10 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
               </div>
             </div>
 
-            {/* Desktop chat panel — always rendered, hidden via CSS on mobile */}
+            {/* Desktop comments panel — always rendered, hidden via CSS on mobile */}
             <aside
-              className="hidden lg:flex flex-col w-[380px] flex-shrink-0 sticky top-[104px] self-start"
-              aria-label="Live fan chat"
+              className="hidden lg:flex flex-col sticky top-[104px] self-start"
+              aria-label="Live fan comments"
             >
               <LiveChat
                 roomId={chatRoomId}
@@ -574,7 +582,7 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
 
             {/* Ad sidebar — desktop only, rightmost column */}
             <aside
-              className="hidden xl:block w-[300px] flex-shrink-0 sticky top-[104px] self-start"
+              className="hidden xl:block sticky top-[104px] self-start"
               aria-label="Advertisements"
             >
               <AdSidebar />

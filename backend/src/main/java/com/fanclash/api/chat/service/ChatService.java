@@ -268,6 +268,78 @@ public class ChatService {
         return sseRegistry.connectionCount(roomId);
     }
 
+    // ── Bot / scheduled message publishing ───────────────────────────────────
+
+    /**
+     * Persists and broadcasts a bot-generated message bypassing the human
+     * moderation pipeline (rate limiting, idempotency key path, and restriction
+     * checks). Content screening still runs so the template pool stays safe.
+     *
+     * @param roomId       target chat room (auto-created if absent)
+     * @param guestToken   pre-provisioned bot token
+     * @param displayName  bot display name, e.g. "FanMeterBot"
+     * @param text         comment text (max 500 chars)
+     * @param botType      classifier for analytics, e.g. "FAN_COMMENT_BOT"
+     * @param idempotencyKey  caller-supplied UUID to prevent duplicate publishes
+     * @return the persisted DTO, or empty if the text fails content screening
+     */
+    @Transactional
+    public Optional<ChatMessageDto> publishBotMessage(
+            String roomId, String guestToken, String displayName,
+            String text, String botType, String idempotencyKey) {
+
+        if (text == null || text.isBlank() || text.length() > 500) {
+            log.warn("Bot message rejected (blank or too long) for room {}", roomId);
+            return Optional.empty();
+        }
+
+        // Idempotency guard — prevents double-fire on scheduler overlap
+        if (idempotencyKey != null) {
+            var existing = messageRepo.findByRoomIdAndIdempotencyKey(roomId, idempotencyKey);
+            if (existing.isPresent()) {
+                return Optional.of(toDto(existing.get(), guestToken));
+            }
+        }
+
+        // Ensure room exists
+        roomRepo.findByRoomId(roomId)
+                .orElseGet(() -> roomRepo.save(ChatRoom.create(roomId, roomId, null)));
+
+        // Content screening — fail closed: skip the message, never publish harmful content
+        String sanitized = sanitize(text);
+        try {
+            ModerationResult result = contentModerator.evaluate(sanitized);
+            if (result.decision() == ModerationDecision.BLOCK
+                    || result.decision() == ModerationDecision.RESTRICT_USER) {
+                log.warn("Bot message blocked by content screening (room={}, rule={})", roomId, result.matchedRule());
+                return Optional.empty();
+            }
+        } catch (Exception e) {
+            log.error("Content moderation error for bot message in room {}: {}", roomId, e.getMessage());
+            return Optional.empty();
+        }
+
+        // Ensure a guest-token row exists for this bot identity
+        guestTokenRepo.findById(guestToken).orElseGet(() -> {
+            ChatGuestToken bot = new ChatGuestToken();
+            bot.setToken(guestToken);
+            bot.setDisplayName(displayName);
+            return guestTokenRepo.save(bot);
+        });
+
+        ChatMessage msg = ChatMessage.createBot(roomId, guestToken, displayName, sanitized, botType, idempotencyKey);
+        msg = messageRepo.save(msg);
+
+        ChatMessageDto dto = toDto(msg, guestToken);
+        try {
+            sseRegistry.broadcast(roomId, "message", objectMapper.writeValueAsString(dto));
+        } catch (Exception e) {
+            log.warn("SSE broadcast error for bot message in room {}: {}", roomId, e.getMessage());
+        }
+
+        return Optional.of(dto);
+    }
+
     // ── User report ───────────────────────────────────────────────────────────
 
     @Transactional
@@ -358,7 +430,8 @@ public class ChatService {
                 m.getDisplayName(),
                 m.getMessageText(),
                 m.getCreatedAt(),
-                m.getGuestToken().equals(requestingToken)
+                m.getGuestToken().equals(requestingToken),
+                m.isAutomated()
         );
     }
 

@@ -96,6 +96,12 @@ const config: Config = {
       transitionTimingFunction: {
         "brand": "cubic-bezier(0.4, 0, 0.2, 1)",
       },
+      gridTemplateColumns: {
+        // Event page 2-col: voting ~68% / comments ~32% (lg–xl)
+        "event-2col": "minmax(0, 2.1fr) minmax(380px, 0.95fr)",
+        // Event page 3-col: voting flex / comments 420px / ads 300px (xl+)
+        "event-3col": "minmax(0, 1fr) 420px 300px",
+      },
     },
   },
   plugins: [],
