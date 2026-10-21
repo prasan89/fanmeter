@@ -1,4 +1,4 @@
-import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult, VotingRoundDto, CastVoteResponse, RankingsDto, AddFavouriteResponse, EvictionPollDto, CastEvictionVoteResponse, GuestTokenResponse, ChatHistoryResponse, ChatMessageDto } from "@/types";
+import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult, VotingRoundDto, CastVoteResponse, RankingsDto, AddFavouriteResponse, EvictionPollDto, CastEvictionVoteResponse, GuestTokenResponse, ChatHistoryResponse, ChatMessageDto, SendMessageResponse, ReportCategory } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
@@ -180,16 +180,54 @@ export async function sendChatMessage(
   guestToken: string,
   messageText: string,
   idempotencyKey: string,
-): Promise<ChatMessageDto> {
+): Promise<SendMessageResponse> {
   const encodedRoom = encodeURIComponent(roomId);
   const res = await fetch(`${API_BASE}/api/chat/rooms/${encodedRoom}/messages`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ guestToken, messageText, idempotencyKey }),
   });
-  const data = (await res.json()) as ApiResponse<ChatMessageDto>;
+  const data = (await res.json()) as ApiResponse<SendMessageResponse>;
   if (!res.ok) throw new Error(data.message ?? `HTTP ${res.status}`);
   return data.data;
+}
+
+export async function updateChatDisplayName(
+  token: string,
+  displayName: string,
+): Promise<GuestTokenResponse> {
+  const res = await fetch(`${API_BASE}/api/chat/guest-token/${encodeURIComponent(token)}/display-name`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ displayName }),
+  });
+  const data = (await res.json()) as ApiResponse<GuestTokenResponse>;
+  if (!res.ok) throw new Error(data.message ?? `HTTP ${res.status}`);
+  return data.data;
+}
+
+export async function reportChatMessage(
+  roomId: string,
+  messageId: number,
+  reporterToken: string,
+  category: ReportCategory["value"],
+): Promise<void> {
+  const encodedRoom = encodeURIComponent(roomId);
+  const res = await fetch(`${API_BASE}/api/chat/rooms/${encodedRoom}/messages/${messageId}/report`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reporterToken, category }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message ?? `HTTP ${res.status}`);
+}
+
+export async function submitChatAppeal(restrictionId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/chat/restrictions/${restrictionId}/appeal`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
 export function createChatSseUrl(roomId: string): string {

@@ -196,3 +196,22 @@ export interface ChatHistoryResponse {
   hasMore: boolean;
   nextCursor: string | null;
 }
+
+export type ModerationDecision =
+  | "ALLOW"
+  | "ALLOW_WITH_WARNING"
+  | "BLOCK"
+  | "REVIEW"
+  | "RESTRICT_USER";
+
+export interface SendMessageResponse {
+  message: ChatMessageDto | null;
+  moderationDecision: ModerationDecision;
+  userMessage: string | null;
+  timeoutExpiresAt: number | null; // epoch seconds
+}
+
+export interface ReportCategory {
+  value: "HARASSMENT" | "HATE_SPEECH" | "THREAT" | "SEXUAL_CONTENT" | "SPAM" | "PRIVATE_INFO" | "OTHER";
+  label: string;
+}
