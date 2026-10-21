@@ -235,6 +235,21 @@ export function useLiveChat(roomId: string): UseLiveChatReturn {
         setRestriction({ type: "ban", expiresAt: null });
       }
     }
+
+    // Immediately add the confirmed message to local state so it appears
+    // without waiting for the SSE echo. The SSE broadcast will arrive shortly
+    // after — the seenIdsRef guard deduplicates it.
+    if (resp.message && resp.moderationDecision !== "BLOCK" && resp.moderationDecision !== "RESTRICT_USER") {
+      const msg = resp.message;
+      if (!seenIdsRef.current.has(msg.id)) {
+        seenIdsRef.current.add(msg.id);
+        setMessages(prev => {
+          const next = [...prev, { ...msg, isOwn: true }];
+          return next.length > MAX_MESSAGES ? next.slice(next.length - MAX_MESSAGES) : next;
+        });
+      }
+    }
+
     return resp;
   }, [roomId]);
 

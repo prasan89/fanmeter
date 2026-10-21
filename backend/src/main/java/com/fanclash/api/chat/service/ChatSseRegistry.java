@@ -64,8 +64,12 @@ public class ChatSseRegistry {
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(SseEmitter.event().name(eventName).data(data));
-            } catch (IOException e) {
-                emitter.completeWithError(e);
+            } catch (Exception e) {
+                // Emitter is dead (client disconnected, async context closed, broken pipe).
+                // Remove it silently and move on — the onCompletion/onError callbacks may
+                // not have fired yet if Tomcat is still cleaning up the async context.
+                emitters.remove(emitter);
+                try { emitter.complete(); } catch (Exception ignored) {}
             }
         }
     }
