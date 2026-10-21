@@ -8,6 +8,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.SimpleTransactionStatus;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,13 +38,23 @@ class NominationSyncServiceTest {
     @Mock HousePulseCrawler           crawler;
     @Mock EntityManager               em;
 
+    // TransactionTemplate executes its callback synchronously; we need a real
+    // PlatformTransactionManager that actually runs the lambda rather than a mock
+    // that returns null (which would skip the callback entirely).
+    PlatformTransactionManager txManager = new AbstractPlatformTransactionManager() {
+        @Override protected Object doGetTransaction() { return new Object(); }
+        @Override protected void doBegin(Object t, TransactionDefinition d) {}
+        @Override protected void doCommit(DefaultTransactionStatus s) {}
+        @Override protected void doRollback(DefaultTransactionStatus s) {}
+    };
+
     NominationSyncService service;
 
     @BeforeEach
     void setUp() {
         service = new NominationSyncService(
             pollRepo, nomineeRepo, sourceRepo, syncLogRepo,
-            contestantRepo, seasonRepo, crawler, em
+            contestantRepo, seasonRepo, crawler, em, txManager
         );
     }
 

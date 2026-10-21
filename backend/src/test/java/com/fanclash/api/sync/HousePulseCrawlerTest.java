@@ -5,6 +5,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.*;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionStatus;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -126,6 +130,12 @@ class HousePulseCrawlerTest {
     // ── Contestant name matching ───────────────────────────────────────────────
 
     private NominationSyncService syncService() {
+        PlatformTransactionManager txManager = new AbstractPlatformTransactionManager() {
+            @Override protected Object doGetTransaction() { return new Object(); }
+            @Override protected void doBegin(Object t, TransactionDefinition d) {}
+            @Override protected void doCommit(DefaultTransactionStatus s) {}
+            @Override protected void doRollback(DefaultTransactionStatus s) {}
+        };
         return new NominationSyncService(
             mock(EvictionPollRepository.class),
             mock(EvictionNomineeRepository.class),
@@ -134,7 +144,8 @@ class HousePulseCrawlerTest {
             mock(ContestantRepository.class),
             mock(SeasonRepository.class),
             new HousePulseCrawler(),
-            mock(jakarta.persistence.EntityManager.class)
+            mock(jakarta.persistence.EntityManager.class),
+            txManager
         );
     }
 
