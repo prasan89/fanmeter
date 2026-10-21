@@ -562,7 +562,6 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
                   <div className="pt-4">
                     <LiveChat
                       roomId={chatRoomId}
-                      className="h-[calc(100vh-200px)]"
                     />
                   </div>
                 )}
@@ -576,7 +575,6 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
             >
               <LiveChat
                 roomId={chatRoomId}
-                className="h-[calc(100vh-130px)]"
               />
             </aside>
 

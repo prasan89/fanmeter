@@ -543,14 +543,15 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
   return (
     <div
       className={cn(
-        "flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden relative",
+        "flex h-[min(680px,calc(100vh-180px))] min-h-[400px] min-w-0 flex-col",
+        "bg-white border border-gray-200 rounded-xl overflow-hidden relative",
         className
       )}
       aria-label="Comments"
       role="region"
     >
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 flex-shrink-0">
+      <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200">
         <span className="text-[15px] font-semibold text-gray-900">Comments</span>
 
         <div className="flex items-center gap-2">
@@ -611,7 +612,7 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto min-h-0"
+          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain"
           aria-live="polite"
           aria-label="Comments"
         >
