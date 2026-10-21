@@ -1,6 +1,8 @@
 import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult, VotingRoundDto, CastVoteResponse, RankingsDto, AddFavouriteResponse, EvictionPollDto, CastEvictionVoteResponse, GuestTokenResponse, ChatHistoryResponse, ChatMessageDto, SendMessageResponse, ReportCategory } from "@/types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const API_BASE = typeof window === "undefined"
+  ? (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080")
+  : "";
 
 async function fetchApi<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
