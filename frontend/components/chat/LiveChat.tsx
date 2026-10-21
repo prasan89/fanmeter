@@ -543,14 +543,19 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
   return (
     <div
       className={cn(
-        "flex min-w-0 flex-col overflow-hidden",
+        "flex min-w-0 min-h-0 flex-shrink-0 flex-col overflow-hidden",
         "bg-white border border-gray-200 rounded-xl relative",
         className
       )}
       style={{
-        height: "min(680px, calc(100vh - 180px))",
-        maxHeight: "680px",
-        minHeight: "400px",
+        // Bound the panel to the viewport. Use dvh so mobile browser chrome is accounted for.
+        height: "min(680px, calc(100dvh - 180px))",
+        maxHeight: "calc(100dvh - 180px)",
+        minHeight: "min(400px, calc(100dvh - 120px))",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        boxSizing: "border-box",
         alignSelf: "flex-start",
       }}
       aria-label="Comments"
@@ -619,6 +624,16 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
           ref={scrollRef}
           onScroll={handleScroll}
           className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain"
+          style={{
+            // Explicitly constrain this flex child; it must absorb overflow instead of
+            // increasing the panel/document height as messages are appended.
+            flex: "1 1 0%",
+            minHeight: 0,
+            height: 0,
+            overflowY: "auto",
+            overflowX: "hidden",
+            overscrollBehavior: "contain",
+          }}
           aria-live="polite"
           aria-label="Comments"
         >
