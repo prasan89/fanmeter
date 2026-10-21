@@ -234,5 +234,8 @@ export async function submitChatAppeal(restrictionId: number): Promise<void> {
 
 export function createChatSseUrl(roomId: string): string {
   const encodedRoom = encodeURIComponent(roomId);
-  return `${API_BASE}/api/chat/rooms/${encodedRoom}/stream`;
+  // SSE streams must go directly to the backend — Next.js rewrites buffer
+  // the response body and break long-lived streaming connections.
+  const sseBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+  return `${sseBase}/api/chat/rooms/${encodedRoom}/stream`;
 }

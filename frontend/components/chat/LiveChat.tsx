@@ -488,9 +488,12 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
   } = useLiveChat(roomId);
 
   const scrollRef        = useRef<HTMLDivElement>(null);
+  const initialScrollDone = useRef(false);
   const [showScroll,     setShowScroll]     = useState(false);
   const [showNameEdit,   setShowNameEdit]   = useState(false);
   const [warningMsg,     setWarningMsg]     = useState<string | null>(null);
+
+  useEffect(() => { initialScrollDone.current = false; }, [roomId]);
 
   // ── Scroll tracking ───────────────────────────────────────────────────────
 
@@ -504,8 +507,17 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
     if (atBottom && unreadCount > 0) clearUnread();
   }
 
+  // Scroll to bottom on initial history load
+  useEffect(() => {
+    if (messages.length > 0 && !initialScrollDone.current) {
+      initialScrollDone.current = true;
+      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   // Auto-scroll only when already at bottom
   useEffect(() => {
+    if (!initialScrollDone.current) return;
     const el = scrollRef.current;
     if (!el) return;
     const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
