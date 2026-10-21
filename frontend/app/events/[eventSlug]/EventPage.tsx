@@ -522,11 +522,12 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
             lg–xl: 2-col grid, ~68% voting / ~32% comments
             xl+:   3-col grid, voting flex-1 / comments fixed 420px / ads fixed 300px
           */}
-          <div className="
-            flex flex-col
-            lg:grid lg:grid-cols-event-2col lg:gap-5 lg:items-start
-            xl:grid-cols-event-3col
-          ">
+          <div
+            className="flex flex-col lg:grid lg:gap-5 lg:items-start"
+            style={{
+              gridTemplateColumns: "minmax(0, 2.1fr) minmax(380px, 0.95fr)",
+            }}
+          >
             {/* Main content column */}
             <div className="min-w-0">
               <div

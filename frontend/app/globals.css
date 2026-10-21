@@ -16,6 +16,9 @@
   --animate-pulse-live: pulseLive 2s infinite;
   --animate-fade-in: fadeIn 0.3s ease-out;
 
+  --grid-template-columns-event-2col: minmax(0, 2.1fr) minmax(380px, 0.95fr);
+  --grid-template-columns-event-3col: minmax(0, 1fr) 420px 300px;
+
   @keyframes pulseLive {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
