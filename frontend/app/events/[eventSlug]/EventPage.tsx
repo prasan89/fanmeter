@@ -4,12 +4,13 @@ import React, { useEffect, useState, useCallback, useRef, Suspense } from "react
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, ChevronLeft, RefreshCw, Flame, Heart } from "lucide-react";
+import { AlertCircle, ChevronLeft, RefreshCw, Flame, Heart, MessageCircle } from "lucide-react";
 import { getRankings, addFavourite } from "@/lib/api";
 import type { ContestantRankingDto, RankingsDto } from "@/types";
 import { EvictionTab } from "./EvictionTab";
 import { TwoColumnLayout } from "@/components/layout/TwoColumnLayout";
 import { AdSidebar } from "@/components/ads/AdSidebar";
+import { LiveChat } from "@/components/chat/LiveChat";
 import {
   FLOAT_KEYFRAMES,
   FloatingHeart,
@@ -382,7 +383,7 @@ function RankingsView({ eventSlug }: { eventSlug: EventSlug }) {
 
 // ── EventPage (main export) ───────────────────────────────────────────────────
 
-type Tab = "eviction" | "rankings";
+type Tab = "eviction" | "rankings" | "chat";
 
 function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
   const cfg = EVENT_CONFIG[eventSlug];
@@ -390,13 +391,19 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
   const searchParams = useSearchParams();
 
   const tabParam = searchParams.get("tab");
-  const activeTab: Tab = tabParam === "rankings" && cfg.showRankings ? "rankings" : "eviction";
+  const activeTab: Tab =
+    tabParam === "rankings" && cfg.showRankings ? "rankings"
+    : tabParam === "chat" ? "chat"
+    : "eviction";
+
+  // Room ID: deterministic, scoped to this event+season
+  const chatRoomId = `event:${eventSlug}:season:${cfg.seasonId}`;
 
   function setTab(tab: Tab) {
     if (tab === "eviction") {
       router.replace(`/events/${eventSlug}`, { scroll: false });
     } else {
-      router.replace(`/events/${eventSlug}?tab=rankings`, { scroll: false });
+      router.replace(`/events/${eventSlug}?tab=${tab}`, { scroll: false });
     }
   }
 
@@ -488,34 +495,92 @@ function EventPageInner({ eventSlug }: { eventSlug: EventSlug }) {
               Fan Rankings
             </button>
             )}
+            {/* Chat tab — visible on mobile only (desktop shows chat panel inline) */}
+            <button
+              role="tab"
+              id="tab-chat"
+              aria-selected={activeTab === "chat"}
+              aria-controls="panel-chat"
+              onClick={() => setTab("chat")}
+              className={`lg:hidden flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                activeTab === "chat"
+                  ? "border-violet-500 text-violet-600"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              <MessageCircle className="w-4 h-4" aria-hidden />
+              Chat
+            </button>
           </div>
         </div>
       </div>
 
       <div className="pb-20 md:pb-10">
-        <TwoColumnLayout sidebar={<AdSidebar />}>
-          <div
-            id="panel-eviction"
-            role="tabpanel"
-            aria-labelledby="tab-eviction"
-            hidden={activeTab !== "eviction"}
-          >
-            {activeTab === "eviction" && (
-              <EvictionTab
-                seasonId={cfg.seasonId}
-                showSlug={cfg.showSlug}
+        {/* Desktop: three-column layout — content | chat panel | ads */}
+        <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-6 items-start">
+            {/* Main content column */}
+            <div className="min-w-0 flex-1">
+              <div
+                id="panel-eviction"
+                role="tabpanel"
+                aria-labelledby="tab-eviction"
+                hidden={activeTab !== "eviction"}
+              >
+                {activeTab === "eviction" && (
+                  <EvictionTab
+                    seasonId={cfg.seasonId}
+                    showSlug={cfg.showSlug}
+                  />
+                )}
+              </div>
+              <div
+                id="panel-rankings"
+                role="tabpanel"
+                aria-labelledby="tab-rankings"
+                hidden={activeTab !== "rankings"}
+              >
+                {activeTab === "rankings" && cfg.showRankings && <RankingsView eventSlug={eventSlug} />}
+              </div>
+              {/* Mobile-only chat panel */}
+              <div
+                id="panel-chat"
+                role="tabpanel"
+                aria-labelledby="tab-chat"
+                hidden={activeTab !== "chat"}
+                className="lg:hidden"
+              >
+                {activeTab === "chat" && (
+                  <div className="pt-4">
+                    <LiveChat
+                      roomId={chatRoomId}
+                      className="h-[calc(100vh-200px)]"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop chat panel — always rendered, hidden via CSS on mobile */}
+            <aside
+              className="hidden lg:flex flex-col w-[380px] flex-shrink-0 sticky top-[104px] self-start"
+              aria-label="Live fan chat"
+            >
+              <LiveChat
+                roomId={chatRoomId}
+                className="h-[calc(100vh-130px)]"
               />
-            )}
+            </aside>
+
+            {/* Ad sidebar — desktop only, rightmost column */}
+            <aside
+              className="hidden xl:block w-[300px] flex-shrink-0 sticky top-[104px] self-start"
+              aria-label="Advertisements"
+            >
+              <AdSidebar />
+            </aside>
           </div>
-          <div
-            id="panel-rankings"
-            role="tabpanel"
-            aria-labelledby="tab-rankings"
-            hidden={activeTab !== "rankings"}
-          >
-            {activeTab === "rankings" && cfg.showRankings && <RankingsView eventSlug={eventSlug} />}
-          </div>
-        </TwoColumnLayout>
+        </div>
       </div>
     </div>
   );

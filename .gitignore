@@ -11,6 +11,11 @@ frontend/out/
 frontend/.env.local
 frontend/.env.production
 
+# Playwright test artifacts
+test-results/
+frontend/test-results/
+frontend/playwright-report/
+
 # IDE
 .idea/
 *.iml

@@ -27,6 +27,15 @@ public class CorsConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
+
+        // SSE streams require explicit Allow-Headers for EventSource
+        CorsConfiguration sseConfig = new CorsConfiguration();
+        sseConfig.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
+        sseConfig.setAllowedMethods(List.of("GET", "OPTIONS"));
+        sseConfig.setAllowedHeaders(List.of("*"));
+        sseConfig.setAllowCredentials(true);
+        source.registerCorsConfiguration("/api/chat/*/stream", sseConfig);
+
         return new CorsFilter(source);
     }
 }

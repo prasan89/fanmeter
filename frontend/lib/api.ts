@@ -1,4 +1,4 @@
-import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult, VotingRoundDto, CastVoteResponse, RankingsDto, AddFavouriteResponse, EvictionPollDto, CastEvictionVoteResponse } from "@/types";
+import type { ApiResponse, Show, Season, Episode, Contestant, SearchResult, VotingRoundDto, CastVoteResponse, RankingsDto, AddFavouriteResponse, EvictionPollDto, CastEvictionVoteResponse, GuestTokenResponse, ChatHistoryResponse, ChatMessageDto } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
@@ -144,4 +144,55 @@ export async function getEvictionHistory(seasonId: number): Promise<EvictionPoll
   if (!res.ok) throw new Error(`API error ${res.status}`);
   const data = (await res.json()) as ApiResponse<EvictionPollDto[]>;
   return data.data ?? [];
+}
+
+export async function issueGuestToken(): Promise<GuestTokenResponse> {
+  const res = await fetch(`${API_BASE}/api/chat/guest-token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = (await res.json()) as ApiResponse<GuestTokenResponse>;
+  if (!res.ok) throw new Error(data.message ?? `HTTP ${res.status}`);
+  return data.data;
+}
+
+export async function getChatHistory(
+  roomId: string,
+  guestToken?: string,
+  before?: string,
+): Promise<ChatHistoryResponse> {
+  const params = new URLSearchParams();
+  if (guestToken) params.set("guestToken", guestToken);
+  if (before)     params.set("before", before);
+  const qs = params.size > 0 ? `?${params}` : "";
+  const encodedRoom = encodeURIComponent(roomId);
+  const res = await fetch(`${API_BASE}/api/chat/rooms/${encodedRoom}/history${qs}`, {
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = (await res.json()) as ApiResponse<ChatHistoryResponse>;
+  if (!res.ok) throw new Error(data.message ?? `HTTP ${res.status}`);
+  return data.data;
+}
+
+export async function sendChatMessage(
+  roomId: string,
+  guestToken: string,
+  messageText: string,
+  idempotencyKey: string,
+): Promise<ChatMessageDto> {
+  const encodedRoom = encodeURIComponent(roomId);
+  const res = await fetch(`${API_BASE}/api/chat/rooms/${encodedRoom}/messages`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ guestToken, messageText, idempotencyKey }),
+  });
+  const data = (await res.json()) as ApiResponse<ChatMessageDto>;
+  if (!res.ok) throw new Error(data.message ?? `HTTP ${res.status}`);
+  return data.data;
+}
+
+export function createChatSseUrl(roomId: string): string {
+  const encodedRoom = encodeURIComponent(roomId);
+  return `${API_BASE}/api/chat/rooms/${encodedRoom}/stream`;
 }

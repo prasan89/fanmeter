@@ -175,3 +175,24 @@ export interface CastEvictionVoteResponse {
   newVoteCount: number;
   contestantId: number;
 }
+
+export interface GuestTokenResponse {
+  token: string;
+  displayName: string;
+}
+
+export interface ChatMessageDto {
+  id: number;
+  roomId: string;
+  displayName: string;
+  messageText: string;
+  createdAt: string;
+  isOwn: boolean;
+}
+
+export interface ChatHistoryResponse {
+  roomId: string;
+  messages: ChatMessageDto[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}
