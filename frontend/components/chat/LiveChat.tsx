@@ -547,7 +547,7 @@ export function LiveChat({ roomId, className }: LiveChatProps) {
   const isOffline     = status === "offline";
   const isTimedOut    = restriction?.type === "timeout";
   const isBanned      = restriction?.type === "ban";
-  const showNameGate  = !isNameSet && !isOffline && status !== "connecting";
+  const showNameGate  = !isNameSet && !isOffline;
   const isConnected   = status === "connected";
 
   // ── Render ────────────────────────────────────────────────────────────────

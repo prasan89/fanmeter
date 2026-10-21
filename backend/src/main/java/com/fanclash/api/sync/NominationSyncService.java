@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -58,6 +60,7 @@ public class NominationSyncService {
     private final SeasonRepository            seasonRepository;
     private final HousePulseCrawler           crawler;
     private final EntityManager               entityManager;
+    private final PlatformTransactionManager  txManager;
 
     // ── Scheduled entry point (fallback for local dev) ────────────────────────
 
@@ -297,8 +300,21 @@ public class NominationSyncService {
 
     // ── DB operations ─────────────────────────────────────────────────────────
 
-    @Transactional
+    // upsertPoll is called from syncShow() which is a private method — Spring AOP cannot
+    // proxy self-invocations, so @Transactional on upsertPoll would be silently ignored.
+    // We use TransactionTemplate directly to guarantee a real transaction is active.
     protected void upsertPoll(Season season, int weekNumber, List<Contestant> nominees,
+                               String nominationState, boolean verified,
+                               String sourceUrl, HousePulseCrawler.CrawlResult crawl,
+                               String showSlug, List<String> unmatched,
+                               List<Contestant> dbContestants) {
+        new TransactionTemplate(txManager).executeWithoutResult(status -> {
+            doUpsertPoll(season, weekNumber, nominees, nominationState, verified,
+                sourceUrl, crawl, showSlug, unmatched, dbContestants);
+        });
+    }
+
+    private void doUpsertPoll(Season season, int weekNumber, List<Contestant> nominees,
                                String nominationState, boolean verified,
                                String sourceUrl, HousePulseCrawler.CrawlResult crawl,
                                String showSlug, List<String> unmatched,
